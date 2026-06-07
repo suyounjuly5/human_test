@@ -190,6 +190,11 @@ export default function ChallengeRunner({
             onComplete={handleComplete}
           />
         );
+      case "discrimination-safety":
+      case "relationship-opinion":
+        return (
+          <ReflectionChallenge telemetry={telemetry} onComplete={handleComplete} />
+        );
       case "ramen-image":
         return (
           <RamenImageChallenge

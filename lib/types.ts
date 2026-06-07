@@ -4,7 +4,9 @@ export type ChallengeType =
   | "hidden-text"
   | "reflection"
   | "opinion"
+  | "discrimination-safety"
   | "ramen-image"
+  | "relationship-opinion"
   | "shape-tracing"
   | "captcha-loop";
 

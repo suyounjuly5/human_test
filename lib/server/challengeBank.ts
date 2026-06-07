@@ -10,10 +10,12 @@ import { HIDDEN_TEXT_BANK } from "./koSecrets";
 const CHALLENGE_ORDER: ChallengeType[] = [
   "timing",
   "hidden-text",
+  "shape-tracing",
   "reflection",
   "opinion",
+  "discrimination-safety",
   "ramen-image",
-  "shape-tracing",
+  "relationship-opinion",
   "captcha-loop",
 ];
 

@@ -290,6 +290,36 @@ async function scoreOpinion(telemetry: ChallengeTelemetry): Promise<ChallengeSco
   };
 }
 
+function scoreDiscriminationSafety(telemetry: ChallengeTelemetry): ChallengeScore {
+  const answer = telemetry.answer ?? "";
+  const flags: string[] = [];
+  let score = 0.55;
+
+  if (answer.trim().length < 150) {
+    score = 0.25;
+    flags.push("under_minimum_length");
+  }
+  if (telemetry.pasteCount > 0) {
+    score -= 0.2;
+    flags.push("paste_used");
+  }
+  if (telemetry.deleteCount > 0 || telemetry.editHistory.length >= 3) {
+    score += 0.15;
+    flags.push("edited_response");
+  }
+  if (/(차별|혐오|상처|문제|존중|고정관념|편견|바꿔|표현)/.test(answer)) {
+    score += 0.2;
+    flags.push("addresses_discrimination_safely");
+  }
+
+  return {
+    challengeId: telemetry.challengeId,
+    challengeType: "discrimination-safety",
+    humanLikelihood: clamp(score, 0, 0.9),
+    flags,
+  };
+}
+
 async function scoreRamen(telemetry: ChallengeTelemetry): Promise<ChallengeScore> {
   const answer = telemetry.answer ?? "";
   const flags: string[] = [];
@@ -328,6 +358,36 @@ async function scoreRamen(telemetry: ChallengeTelemetry): Promise<ChallengeScore
     challengeType: "ramen-image",
     humanLikelihood: adjusted,
     flags: [...flags, ...aiResult.flags],
+  };
+}
+
+function scoreRelationshipOpinion(telemetry: ChallengeTelemetry): ChallengeScore {
+  const answer = telemetry.answer ?? "";
+  const flags: string[] = [];
+  let score = 0.5;
+
+  if (answer.trim().length < 20) {
+    score = 0.25;
+    flags.push("too_short");
+  }
+  if (telemetry.pasteCount > 0) {
+    score -= 0.2;
+    flags.push("paste_used");
+  }
+  if (telemetry.deleteCount > 0 || telemetry.editHistory.length >= 3) {
+    score += 0.1;
+    flags.push("edited_response");
+  }
+  if (/(상처|존중|대화|강요|솔직|몸|건강|감정|사과|여자친구|관계)/.test(answer)) {
+    score += 0.25;
+    flags.push("relationship_context_addressed");
+  }
+
+  return {
+    challengeId: telemetry.challengeId,
+    challengeType: "relationship-opinion",
+    humanLikelihood: clamp(score, 0, 0.9),
+    flags,
   };
 }
 
@@ -450,8 +510,12 @@ export async function scoreChallenge(
       return scoreReflection(telemetry);
     case "opinion":
       return scoreOpinion(telemetry);
+    case "discrimination-safety":
+      return scoreDiscriminationSafety(telemetry);
     case "ramen-image":
       return scoreRamen(telemetry);
+    case "relationship-opinion":
+      return scoreRelationshipOpinion(telemetry);
     case "shape-tracing":
       return scoreShapeTracing(telemetry);
     case "captcha-loop":
