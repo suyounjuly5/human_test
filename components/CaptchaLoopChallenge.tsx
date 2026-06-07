@@ -22,11 +22,13 @@ export default function CaptchaLoopChallenge({
   telemetry,
   onComplete,
 }: Props) {
-  const [captchaText] = useState(() => randomCaptcha());
+  const [captchaText, setCaptchaText] = useState(() => randomCaptcha());
   const [input, setInput] = useState("");
+  const [rounds, setRounds] = useState<CaptchaLoopData["rounds"]>([]);
   const clickEventsRef = useRef<NonNullable<CaptchaLoopData["letterClicks"]>>([]);
   const imageClicksRef = useRef<NonNullable<CaptchaLoopData["imageClicks"]>>([]);
   const roundStartRef = useRef(Date.now());
+  const lastImageClickRef = useRef(0);
   const completedRef = useRef(false);
 
   const submitCaptcha = () => {
@@ -34,6 +36,7 @@ export default function CaptchaLoopChallenge({
     completedRef.current = true;
     const elapsedMs = Date.now() - roundStartRef.current;
     const updatedAttempts = [
+      ...rounds,
       { userInput: input.trim().toUpperCase(), elapsedMs, usedEscape: false },
     ];
     const captchaData: CaptchaLoopData = {
@@ -51,9 +54,11 @@ export default function CaptchaLoopChallenge({
 
   const handleImageClick = () => {
     telemetry.onPointerMove();
-    imageClicksRef.current.push({ t: Date.now() });
+    const now = Date.now();
+    imageClicksRef.current.push({ t: now });
     if (imageClicksRef.current.length > 20) imageClicksRef.current.shift();
-    if (imageClicksRef.current.length >= 2) submitCaptcha();
+    if (now - lastImageClickRef.current <= 500) submitCaptcha();
+    lastImageClickRef.current = now;
   };
 
   const handleLetterClick = (char: string, index: number) => {
@@ -64,7 +69,14 @@ export default function CaptchaLoopChallenge({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    submitCaptcha();
+    const elapsedMs = Date.now() - roundStartRef.current;
+    setRounds((prev) => [
+      ...prev,
+      { userInput: input.trim().toUpperCase(), elapsedMs, usedEscape: false },
+    ]);
+    setCaptchaText(randomCaptcha());
+    setInput("");
+    roundStartRef.current = Date.now();
   };
 
   return (

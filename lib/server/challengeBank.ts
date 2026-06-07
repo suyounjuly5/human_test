@@ -80,8 +80,8 @@ export function getClientChallengeConfig(
     case "opinion":
       break;
     case "discrimination-safety":
-      config.minChars = 150;
-      config.placeholder = "150자 이상 입력해 주세요.";
+      config.minChars = 100;
+      config.placeholder = "100자 이상 입력해 주세요.";
       break;
     case "ramen-image":
       config.images = ["/assets/ramen_1.png", "/assets/ramen_2.png"];
