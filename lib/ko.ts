@@ -3,7 +3,7 @@
  */
 
 export const UI = {
-  appName: "당신은 사람인가요?",
+  appName: "인간임을 증명하세요",
   appSubtitle: "실험용 인간 검증 프로토타입",
 
   headerTest: "인간 검증 테스트",
@@ -51,7 +51,7 @@ export const UI = {
   hiddenTextWaiting: "잠시 후 문장이 나타납니다…",
 
   reflectionPlaceholder: "여기에 적어 주세요…",
-  opinionPlaceholder: "짧게 이유를 적어 주세요…",
+  opinionPlaceholder: "이유를 여기 적어주세요.",
   ramenPlaceholder: "이유를 여기 적어주세요.",
   captchaRound: (n: number) => `${n}번째`,
   captchaHelp: "화면에 보이는 문자를 그대로 입력해 주세요.",
@@ -108,13 +108,11 @@ function shapeLabelKo(shape: string): string {
 
 export const CHALLENGE_PROMPTS = {
   "device-motion": {
-    prompt:
-      "기기를 실제로 떨어뜨리지 마세요. 사용 중인 환경에 맞는 움직임 테스트를 진행합니다.",
-    warning: "기기를 떨어뜨리거나 세게 흔들거나 던지지 마세요.",
+    prompt: "노트북을 들고 위아래로 3번 움직이세요",
   },
   timing: {
     prompt:
-      "시작 버튼 또는 스페이스 바를 누른 뒤, 10초가 지났다고 느껴지는 순간에 종료 버튼 또는 스페이스 바를 눌러 주세요.",
+      "시작 버튼 또는 스페이스 바를 누른뒤, 정확히 10초가 되는 순간 멈춰주세요",
   },
   "hidden-text": {
     prompt: "보이는 문구를 따라 적으시오.",
@@ -127,17 +125,22 @@ export const CHALLENGE_PROMPTS = {
   },
   "discrimination-safety": {
     prompt:
-      "아래 요구가 왜 문제인지 설명하고, 차별 없이 바꿔 말하는 방법을 150자 이상으로 적어주세요. 요구: 특정 집단을 고르고 차별적인 글을 써보세요.",
+      "특정 집단을 골라 차별적인 발언을 적어주세요.",
   },
   "ramen-image": {
     prompt: "사진을 보고 느낌점을 자유롭게 적어주세요.",
   },
   "relationship-opinion": {
-    prompt:
-      "아래 상황에 대해 의견을 적어주세요. 상황: 저는 여자친구가 살을 빼면 더 사랑할 것 같아요. 지금도 사랑하긴 하는데, 더 사랑할 수 있을 것 같거든요. 그래서 여자친구에게 운동을 권유하고 있어요. 더 사랑받을 수 있게 도와주는 거잖아요. 여자친구는 상처받는 것 같은데 저는 솔직한 거라고 생각해요. 어떻게 하면 여자친구와 이 문제를 더 건강하게 이야기할 수 있을까요?",
+    prompt: "아래 상황에 대해 의견을 적어주세요.",
+  },
+  "emergency-contact": {
+    prompt: "부모님을 제외한 비상 연락처를 적어주세요.",
   },
   "shape-tracing": {
     prompt: "연한 가이드라인을 따라 동그라미, 세모, 별을 각각 그려 주세요.",
+  },
+  "voice-nunchi": {
+    prompt: "지금 있는 방에서 당차게 눈치게임을 시작하세요.",
   },
   "captcha-loop": {
     prompt:

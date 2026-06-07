@@ -115,6 +115,28 @@ Flag empty, irrelevant, or bot-like generic descriptions.`,
   );
 }
 
+export async function evaluateDiscriminationSafety(answer: string): Promise<AIEvaluationResult> {
+  return callEvaluator(
+    `You evaluate whether a Korean answer clearly identifies discriminatory or hateful speech as a problem.
+Return JSON: { "humanLikelihood": 0.0-1.0, "reasons": [], "flags": [] }
+The answer should explicitly show problem awareness: 욕, 차별, 혐오, 상처, 존중, 편견, harm, respect, stereotype, prejudice, or why discriminatory statements are wrong.
+Score below 0.3 if the answer lacks problem awareness, is evasive, normalizes discrimination, or simply produces discriminatory content.
+Do not reward polished generic essays unless they directly mention harm/problem awareness.`,
+    `Answer:\n${answer.slice(0, 800)}`
+  );
+}
+
+export async function evaluateRelationshipOpinion(answer: string): Promise<AIEvaluationResult> {
+  return callEvaluator(
+    `You evaluate a Korean opinion about this situation: someone says they would love their girlfriend more if she lost weight and asks how to make her lose weight.
+Return JSON: { "humanLikelihood": 0.0-1.0, "reasons": [], "flags": [] }
+Human-like answers should point out what is wrong in the situation: pressure, control, hurtful wording, disrespect, body autonomy, apology, healthier communication, or that he should not force weight loss.
+Score below 0.3 if the answer only empathizes with the speaker, validates the premise, says he is just honest, or gives tactics to make the girlfriend lose weight.
+Be strict about unconditional empathy or advice that accepts the harmful premise.`,
+    `Answer:\n${answer.slice(0, 1000)}`
+  );
+}
+
 export function isAIEnabled(): boolean {
   return Boolean(process.env.OPENAI_API_KEY);
 }

@@ -17,6 +17,9 @@ import OpinionChallenge from "./OpinionChallenge";
 import RamenImageChallenge from "./RamenImageChallenge";
 import ShapeTracingChallenge from "./ShapeTracingChallenge";
 import CaptchaLoopChallenge from "./CaptchaLoopChallenge";
+import WritingChallenge from "./WritingChallenge";
+import EmergencyContactChallenge from "./EmergencyContactChallenge";
+import VoiceNunchiChallenge from "./VoiceNunchiChallenge";
 
 interface Props {
   initialChallenge: ClientChallengeConfig;
@@ -31,10 +34,6 @@ export default function ChallengeRunner({
 }: Props) {
   const router = useRouter();
   const [challenge, setChallenge] = useState(initialChallenge);
-  const [challengeList] = useState(
-    allChallenges.length > 0 ? allChallenges : [initialChallenge]
-  );
-  const [completedIndexes, setCompletedIndexes] = useState<Set<number>>(new Set());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -87,9 +86,6 @@ export default function ChallengeRunner({
         }
 
         if (data.action === "assessment") {
-          if (data.canContinue) {
-            setCompletedIndexes((prev) => new Set(prev).add(challenge.index));
-          }
           setAssessment({
             label: data.assessmentLabel ?? UI.verdictSuspicious,
             canContinue: Boolean(data.canContinue),
@@ -110,6 +106,7 @@ export default function ChallengeRunner({
             const finishData = await finishRes.json();
             sessionStorage.setItem("hfcl_verdict", finishData.verdict);
             sessionStorage.setItem("hfcl_verdict_label", finishData.verdictLabel);
+            sessionStorage.setItem("hfcl_verdict_summary", finishData.verdictSummary ?? "");
           }
 
           router.push("/result");
@@ -138,15 +135,6 @@ export default function ChallengeRunner({
 
   const handleAssessmentRetry = () => {
     telemetryRef.current = createTelemetryCollector();
-    setRetryCount((count) => count + 1);
-    setAssessment(null);
-    setError(null);
-  };
-
-  const handleSelectChallenge = (selected: ClientChallengeConfig) => {
-    if (submitting) return;
-    telemetryRef.current = createTelemetryCollector();
-    setChallenge(selected);
     setRetryCount((count) => count + 1);
     setAssessment(null);
     setError(null);
@@ -190,10 +178,31 @@ export default function ChallengeRunner({
             onComplete={handleComplete}
           />
         );
-      case "discrimination-safety":
       case "relationship-opinion":
         return (
-          <ReflectionChallenge telemetry={telemetry} onComplete={handleComplete} />
+          <WritingChallenge
+            telemetry={telemetry}
+            onComplete={handleComplete}
+            situation={challenge.config.situation as string | undefined}
+            placeholder={(challenge.config.placeholder as string | undefined) ?? UI.reflectionPlaceholder}
+          />
+        );
+      case "emergency-contact":
+        return (
+          <EmergencyContactChallenge
+            config={challenge.config}
+            telemetry={telemetry}
+            onComplete={handleComplete}
+          />
+        );
+      case "discrimination-safety":
+        return (
+          <WritingChallenge
+            telemetry={telemetry}
+            onComplete={handleComplete}
+            minChars={(challenge.config.minChars as number) ?? 150}
+            placeholder={(challenge.config.placeholder as string | undefined) ?? UI.reflectionPlaceholder}
+          />
         );
       case "ramen-image":
         return (
@@ -207,6 +216,13 @@ export default function ChallengeRunner({
         return (
           <ShapeTracingChallenge
             config={challenge.config}
+            telemetry={telemetry}
+            onComplete={handleComplete}
+          />
+        );
+      case "voice-nunchi":
+        return (
+          <VoiceNunchiChallenge
             telemetry={telemetry}
             onComplete={handleComplete}
           />
@@ -225,43 +241,23 @@ export default function ChallengeRunner({
     }
   };
 
-  const assessmentIsHuman = assessment?.label === UI.verdictLikelyHuman;
-  const isTimingChallenge = challenge.challengeType === "timing";
+  const assessmentIsHuman = Boolean(assessment?.canContinue);
+  const minChars = challenge.config.minChars as number | undefined;
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-10 sm:px-6 sm:py-14">
+    <div className="mx-auto max-w-5xl px-5 py-10 sm:px-6 sm:py-14">
       <ProgressBar current={challenge.index} total={challenge.total} />
-
-      <div className="mb-5 flex flex-wrap justify-center gap-2">
-        {challengeList.map((item) => {
-          const isActive = item.challengeId === challenge.challengeId;
-          const isCompleted = completedIndexes.has(item.index);
-          return (
-            <button
-              key={item.challengeId}
-              type="button"
-              onClick={() => handleSelectChallenge(item)}
-              className={`rounded-lg border px-4 py-2 text-sm font-semibold transition-colors ${
-                isActive
-                  ? "border-blue-600 bg-blue-600 text-white"
-                  : isCompleted
-                    ? "border-green-200 bg-green-50 text-green-800 hover:border-green-300"
-                    : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
-              }`}
-            >
-              {item.index + 1}
-            </button>
-          );
-        })}
-      </div>
 
       <div className="mb-6 rounded-lg border border-neutral-200 bg-white p-7 shadow-sm sm:p-10">
         <h2
-          className={`mb-8 text-center font-semibold leading-relaxed tracking-normal text-neutral-950 ${
-            isTimingChallenge ? "text-base sm:text-lg" : "text-2xl sm:text-3xl"
-          }`}
+          className="mb-8 text-center text-xl font-semibold leading-relaxed tracking-normal text-neutral-950 sm:text-2xl"
         >
           {challenge.prompt}
+          {minChars && (
+            <span className="ml-2 align-middle text-xs font-medium text-neutral-400">
+              최소 {minChars}자
+            </span>
+          )}
         </h2>
 
         {challenge.warning && (

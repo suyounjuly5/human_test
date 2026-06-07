@@ -59,7 +59,7 @@ export default function DeviceMotionChallenge({ config, telemetry, onComplete }:
         motionMode: "sensor-motion",
         motionSamples: samplesRef.current,
       });
-    }, 300);
+    }, 800);
   };
 
   const submitDragFallback = () => {
@@ -73,7 +73,7 @@ export default function DeviceMotionChallenge({ config, telemetry, onComplete }:
         motionMode: "drag-fallback",
         dragMotionData: buildDragMotionData(),
       });
-    }, 300);
+    }, 800);
   };
 
   useEffect(() => {
@@ -273,43 +273,39 @@ export default function DeviceMotionChallenge({ config, telemetry, onComplete }:
     };
   };
 
-  const modeLabel = mode === "sensor-motion" ? UI.motionModeSensor : UI.motionModeDrag;
   if (mode === "checking" || mode === "permission") {
     return (
-      <div className="space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600">
+      <div className="mx-auto max-w-md rounded-lg border border-neutral-200 bg-neutral-50 p-6 text-center text-sm text-neutral-500">
         <p>{mode === "permission" ? UI.motionPermission : UI.detectingDevice}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-medium text-neutral-600">
-        {modeLabel}
-      </div>
-
+    <div className="mx-auto max-w-xl">
       {mode === "sensor-motion" ? (
-        <div className="rounded-lg border border-neutral-200 bg-white p-6 text-center">
-          <p className="text-4xl font-bold text-blue-600">{moveCount}</p>
-          <p className="mt-2 text-sm text-neutral-600">{UI.motionCount(moveCount, required)}</p>
-          <p className="mt-4 text-sm text-neutral-700">{UI.motionSensorInstruction}</p>
-          <p className="mt-2 text-xs text-neutral-500">
-            {isComplete ? UI.motionComplete : UI.motionHint}
+        <div className="text-center">
+          <p className="text-5xl font-bold text-blue-600">
+            {isComplete ? "통과하셨습니다" : moveCount}
           </p>
+          {!isComplete && (
+            <p className="mt-2 text-sm font-medium text-neutral-500">{moveCount} / {required}</p>
+          )}
+          <div className="mt-6 rounded-lg border border-neutral-200 bg-neutral-50 p-10">
+            <LaptopIcon className="mx-auto h-28 w-36 text-blue-700" />
+          </div>
         </div>
       ) : (
-        <div className="space-y-3">
-          {fallbackReason && (
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              {fallbackReason}
-            </p>
+        <div className="text-center">
+          <p className="text-5xl font-bold text-blue-600">
+            {isComplete ? "통과하셨습니다" : moveCount}
+          </p>
+          {!isComplete && (
+            <p className="mt-2 text-sm font-medium text-neutral-500">{moveCount} / {required}</p>
           )}
-          <p className="text-sm text-neutral-700">{UI.dragFallbackInstruction}</p>
-          <div className="relative h-72 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 touch-none">
-            <div className="absolute bottom-8 left-1/2 top-8 w-px -translate-x-1/2 bg-neutral-300" />
-            <div className="absolute left-1/2 top-8 h-[calc(100%-4rem)] w-20 -translate-x-1/2 rounded-full border border-dashed border-neutral-300" />
+          <div className="relative mt-6 h-80 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 touch-none">
             <div
-              className="absolute left-1/2 grid h-20 w-28 -translate-x-1/2 cursor-grab select-none place-items-center rounded-lg border border-blue-200 bg-white shadow-md transition-[box-shadow] active:cursor-grabbing"
+              className="absolute left-1/2 grid h-28 w-40 cursor-grab select-none place-items-center rounded-lg bg-white shadow-sm ring-1 ring-neutral-200 transition-shadow active:cursor-grabbing active:shadow-md"
               style={{ top: `${dragY}%`, transform: "translate(-50%, -50%)" }}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
@@ -320,17 +316,23 @@ export default function DeviceMotionChallenge({ config, telemetry, onComplete }:
               aria-label={UI.dragFallbackInstruction}
               tabIndex={0}
             >
-              <div className="h-10 w-16 rounded border-2 border-neutral-700 bg-blue-50">
-                <div className="mx-auto mt-1 h-5 w-10 rounded-sm bg-blue-200" />
-              </div>
-              <div className="h-1.5 w-20 rounded-b bg-neutral-700" />
+              <LaptopIcon className="h-20 w-28 text-blue-700" />
             </div>
-            <p className="absolute bottom-2 left-0 right-0 text-center text-xs text-neutral-500">
-              {isComplete ? UI.motionComplete : UI.dragHint(required, moveCount)}
-            </p>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function LaptopIcon({ className }: { className?: string }) {
+  return (
+    <div className={className} aria-hidden="true">
+      <div className="mx-auto h-[68%] w-[78%] rounded-t-lg border-[6px] border-current bg-blue-50 p-2">
+        <div className="h-full rounded-sm bg-blue-100" />
+      </div>
+      <div className="mx-auto h-[10%] w-full rounded-b-xl bg-current" />
+      <div className="mx-auto h-[4%] w-[52%] rounded-b bg-current opacity-70" />
     </div>
   );
 }

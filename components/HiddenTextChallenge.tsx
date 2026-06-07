@@ -73,8 +73,7 @@ export default function HiddenTextChallenge({ config, telemetry, onComplete }: P
         />
         <button
           type="submit"
-          disabled={!answer.trim()}
-          className="rounded-lg bg-blue-600 px-7 py-3 text-white hover:bg-blue-700 disabled:bg-neutral-300"
+          className="rounded-lg bg-blue-600 px-7 py-3 text-white hover:bg-blue-700"
         >
           {UI.submit}
         </button>

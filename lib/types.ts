@@ -7,7 +7,9 @@ export type ChallengeType =
   | "discrimination-safety"
   | "ramen-image"
   | "relationship-opinion"
+  | "emergency-contact"
   | "shape-tracing"
+  | "voice-nunchi"
   | "captcha-loop";
 
 export type Verdict = "likely_human" | "suspicious" | "likely_agent";
@@ -30,6 +32,7 @@ export interface ChallengeTelemetry {
   motionSamples?: MotionSample[];
   dragMotionData?: DragMotionData;
   timingData?: TimingData;
+  voiceData?: VoiceData;
   captchaData?: CaptchaLoopData;
   viewport?: { width: number; height: number };
   userAgent?: string;
@@ -68,6 +71,18 @@ export interface TimingData {
   stopTimestamp: number;
   perceivedElapsedMs: number;
   stopButtonHighlighted: boolean;
+}
+
+export interface VoiceData {
+  permissionGranted: boolean;
+  recordingStartedAt: number;
+  recordingEndedAt: number;
+  durationMs: number;
+  samples: { t: number; rms: number; db: number }[];
+  peakDb: number;
+  averageDb: number;
+  loudSampleCount: number;
+  quietSampleCount: number;
 }
 
 export interface CaptchaLoopData {
@@ -139,6 +154,7 @@ export interface SubmitResponse {
 export interface FinishResponse {
   verdict: Verdict;
   verdictLabel: string;
+  verdictSummary?: string;
   sessionId: string;
 }
 

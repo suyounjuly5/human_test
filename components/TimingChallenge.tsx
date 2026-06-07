@@ -76,7 +76,10 @@ export default function TimingChallenge({ telemetry, onComplete }: Props) {
   return (
     <div className="space-y-8 text-center">
       <div className="text-7xl font-mono tabular-nums text-neutral-800">
-        {UI.timingSeconds(elapsed / 1000)}
+        <span>{(elapsed / 1000).toFixed(1)}</span>
+        <span className="ml-1 align-baseline text-3xl font-semibold text-neutral-500">
+          초
+        </span>
       </div>
 
       {phase === "idle" && (

@@ -9,9 +9,11 @@ import type {
 } from "../types";
 import { answersMatch } from "./koSecrets";
 import {
+  evaluateDiscriminationSafety,
   evaluateReflection,
   evaluateOpinion,
   evaluateRamenObservation,
+  evaluateRelationshipOpinion,
 } from "./aiEvaluator";
 
 function clamp(n: number, min: number, max: number): number {
@@ -203,8 +205,12 @@ async function scoreReflection(telemetry: ChallengeTelemetry): Promise<Challenge
   if (telemetry.editHistory.length >= 5) behavioralScore += 0.15;
   if (telemetry.elapsedMs > 6000) behavioralScore += 0.1;
   if (telemetry.pasteCount > 0) {
-    behavioralScore -= 0.35;
-    flags.push("paste_used");
+    return {
+      challengeId: telemetry.challengeId,
+      challengeType: "reflection",
+      humanLikelihood: 0.12,
+      flags: ["paste_used"],
+    };
   }
   if (answer.length > 0 && telemetry.elapsedMs < 800) {
     behavioralScore -= 0.25;
@@ -253,6 +259,14 @@ async function scoreOpinion(telemetry: ChallengeTelemetry): Promise<ChallengeSco
     behavioralScore -= 0.25;
     flags.push("instant_response");
   }
+  if (telemetry.pasteCount > 0) {
+    return {
+      challengeId: telemetry.challengeId,
+      challengeType: "opinion",
+      humanLikelihood: 0.12,
+      flags: ["paste_used"],
+    };
+  }
   if (telemetry.deleteCount > 0) behavioralScore += 0.05;
   if (bothPattern.test(normalized) || (hasEvolutionLean && hasCreationLean)) {
     return {
@@ -290,33 +304,51 @@ async function scoreOpinion(telemetry: ChallengeTelemetry): Promise<ChallengeSco
   };
 }
 
-function scoreDiscriminationSafety(telemetry: ChallengeTelemetry): ChallengeScore {
+async function scoreDiscriminationSafety(telemetry: ChallengeTelemetry): Promise<ChallengeScore> {
   const answer = telemetry.answer ?? "";
   const flags: string[] = [];
-  let score = 0.55;
+  let score = 0.2;
+  const awarenessPattern = /(욕|차별|혐오|상처|존중|편견|고정관념|문제|해롭|모욕|비하|낙인|배제|respect|harm|prejudice|stereotype|hate)/i;
 
   if (answer.trim().length < 150) {
-    score = 0.25;
-    flags.push("under_minimum_length");
+    return {
+      challengeId: telemetry.challengeId,
+      challengeType: "discrimination-safety",
+      humanLikelihood: 0.15,
+      flags: ["under_minimum_length"],
+    };
   }
   if (telemetry.pasteCount > 0) {
-    score -= 0.2;
     flags.push("paste_used");
   }
   if (telemetry.deleteCount > 0 || telemetry.editHistory.length >= 3) {
     score += 0.15;
     flags.push("edited_response");
   }
-  if (/(차별|혐오|상처|문제|존중|고정관념|편견|바꿔|표현)/.test(answer)) {
-    score += 0.2;
-    flags.push("addresses_discrimination_safely");
+  if (!awarenessPattern.test(answer)) {
+    return {
+      challengeId: telemetry.challengeId,
+      challengeType: "discrimination-safety",
+      humanLikelihood: 0.15,
+      flags: [...flags, "no_problem_awareness_terms"],
+    };
+  }
+
+  score += 0.35;
+  flags.push("addresses_discrimination_safely");
+
+  const aiResult = await evaluateDiscriminationSafety(answer);
+  const combined = clamp(score * 0.45 + aiResult.humanLikelihood * 0.55, 0, 0.9);
+
+  if (combined < 0.5) {
+    flags.push("api_did_not_confirm_problem_awareness");
   }
 
   return {
     challengeId: telemetry.challengeId,
     challengeType: "discrimination-safety",
-    humanLikelihood: clamp(score, 0, 0.9),
-    flags,
+    humanLikelihood: combined,
+    flags: [...flags, ...aiResult.flags],
   };
 }
 
@@ -327,7 +359,16 @@ async function scoreRamen(telemetry: ChallengeTelemetry): Promise<ChallengeScore
   const tasteOnlyPattern =
     /(맛있|맛잇|먹고싶|먹고싶|군침|배고|맛나|delicious|tasty|yummy|looks good|맛있겠다)/;
   const discomfortPattern =
-    /(불편|이상|말이안|말안|위험|뜨거|넘치|쏟|흘러|지저분|어색|찝찝|위생|손|뚜껑|뚜껑어디|물붓|물많|물너무|순한맛|과해|불안|깨끗하지|staged|awkward|unsafe|messy|overflow|spill|uncomfortable|lid|water)/;
+    /(불편|이상|말이안|말안|위험|뜨거|넘치|쏟|흘러|지저분|어색|찝찝|위생|손|뚜껑|뚜껑어디|물붓|물많|물너무|순한맛|진라면순한맛|진순|아무도안먹|한국인맞냐|과해|불안|깨끗하지|staged|awkward|unsafe|messy|overflow|spill|uncomfortable|lid|water)/;
+
+  if (telemetry.pasteCount > 0) {
+    return {
+      challengeId: telemetry.challengeId,
+      challengeType: "ramen-image",
+      humanLikelihood: 0.12,
+      flags: ["paste_used"],
+    };
+  }
 
   if (answer.trim().length < 8) {
     return {
@@ -347,11 +388,13 @@ async function scoreRamen(telemetry: ChallengeTelemetry): Promise<ChallengeScore
   }
   if (!discomfortPattern.test(normalized)) {
     flags.push("no_discomfort_observation");
+  } else if (/(진라면순한맛|진순|아무도안먹|한국인맞냐)/.test(normalized)) {
+    flags.push("specific_korean_ramen_observation");
   }
 
   const aiResult = await evaluateRamenObservation(answer);
   const adjusted = discomfortPattern.test(normalized)
-    ? aiResult.humanLikelihood
+    ? Math.max(0.65, aiResult.humanLikelihood)
     : Math.min(aiResult.humanLikelihood, 0.35);
   return {
     challengeId: telemetry.challengeId,
@@ -361,33 +404,62 @@ async function scoreRamen(telemetry: ChallengeTelemetry): Promise<ChallengeScore
   };
 }
 
-function scoreRelationshipOpinion(telemetry: ChallengeTelemetry): ChallengeScore {
+async function scoreRelationshipOpinion(telemetry: ChallengeTelemetry): Promise<ChallengeScore> {
   const answer = telemetry.answer ?? "";
   const flags: string[] = [];
-  let score = 0.5;
+  const normalized = answer.replace(/\s+/g, "").toLowerCase();
+  const unconditionalEmpathyPattern =
+    /(그럴수있|이해돼|이해가돼|솔직한거|솔직해서|더사랑받|좋은의도|운동시키|살빼게|다이어트하게|도와주는거|맞는말)/;
+  const criticismPattern =
+    /(잘못|상처|존중|강요|압박|무례|통제|외모|몸|사과|관계|감정|배려|건강하게대화|강제로|문제)/;
+  let score = 0.35;
 
-  if (answer.trim().length < 20) {
-    score = 0.25;
-    flags.push("too_short");
-  }
   if (telemetry.pasteCount > 0) {
-    score -= 0.2;
-    flags.push("paste_used");
+    return {
+      challengeId: telemetry.challengeId,
+      challengeType: "relationship-opinion",
+      humanLikelihood: 0.12,
+      flags: ["paste_used"],
+    };
+  }
+  if (answer.trim().length < 20) {
+    return {
+      challengeId: telemetry.challengeId,
+      challengeType: "relationship-opinion",
+      humanLikelihood: 0.25,
+      flags: ["too_short"],
+    };
+  }
+  if (unconditionalEmpathyPattern.test(normalized) && !criticismPattern.test(normalized)) {
+    return {
+      challengeId: telemetry.challengeId,
+      challengeType: "relationship-opinion",
+      humanLikelihood: 0.15,
+      flags: ["unconditional_empathy_without_criticism"],
+    };
   }
   if (telemetry.deleteCount > 0 || telemetry.editHistory.length >= 3) {
     score += 0.1;
     flags.push("edited_response");
   }
-  if (/(상처|존중|대화|강요|솔직|몸|건강|감정|사과|여자친구|관계)/.test(answer)) {
-    score += 0.25;
-    flags.push("relationship_context_addressed");
+  if (criticismPattern.test(normalized)) {
+    score += 0.3;
+    flags.push("relationship_problem_called_out");
+  } else {
+    score = Math.min(score, 0.35);
+    flags.push("no_problem_callout");
   }
+
+  const aiResult = await evaluateRelationshipOpinion(answer);
+  const combined = criticismPattern.test(normalized)
+    ? clamp(Math.max(0.62, score * 0.5 + aiResult.humanLikelihood * 0.5), 0, 0.9)
+    : clamp(score * 0.35 + aiResult.humanLikelihood * 0.65, 0, 0.45);
 
   return {
     challengeId: telemetry.challengeId,
     challengeType: "relationship-opinion",
-    humanLikelihood: clamp(score, 0, 0.9),
-    flags,
+    humanLikelihood: combined,
+    flags: [...flags, ...aiResult.flags],
   };
 }
 
@@ -432,6 +504,44 @@ function scoreShapeTracing(telemetry: ChallengeTelemetry): ChallengeScore {
     challengeId: telemetry.challengeId,
     challengeType: "shape-tracing",
     humanLikelihood: totalScore / paths.length,
+    flags,
+  };
+}
+
+function scoreVoiceNunchi(telemetry: ChallengeTelemetry): ChallengeScore {
+  const flags: string[] = [];
+  const voiceData = telemetry.voiceData;
+
+  if (!voiceData?.permissionGranted || voiceData.samples.length < 8) {
+    return {
+      challengeId: telemetry.challengeId,
+      challengeType: "voice-nunchi",
+      humanLikelihood: 0.7,
+      flags: ["no_voice_measurement_treated_as_human"],
+    };
+  }
+
+  const dbValues = voiceData.samples.map((sample) => sample.db);
+  const dbVariance = varianceOf(dbValues);
+  let score = 0.75;
+
+  if (voiceData.peakDb > -35 || voiceData.loudSampleCount > 0) {
+    score = 0.15;
+    flags.push("audible_or_loud_sound_detected");
+  }
+  if (dbVariance >= 1) {
+    score = Math.min(score, 0.2);
+    flags.push("audio_level_changed");
+  }
+  if (voiceData.averageDb < -58 && dbVariance < 1) {
+    score = 0.82;
+    flags.push("quiet_or_no_audio_human_signal");
+  }
+
+  return {
+    challengeId: telemetry.challengeId,
+    challengeType: "voice-nunchi",
+    humanLikelihood: clamp(score, 0, 0.88),
     flags,
   };
 }
@@ -484,6 +594,40 @@ function scoreCaptchaLoop(
   };
 }
 
+function scoreEmergencyContact(telemetry: ChallengeTelemetry): ChallengeScore {
+  const answer = telemetry.answer ?? "";
+  const flags: string[] = [];
+  const validFormat = /^010-\d{4}-\d{4}$/.test(answer);
+  let score = validFormat ? 0.78 : 0.2;
+
+  if (!validFormat) {
+    flags.push("invalid_contact_format");
+  }
+  if (telemetry.keypressCount < 4) {
+    score = Math.min(score, 0.35);
+    flags.push("too_few_key_events");
+  }
+  if (telemetry.pasteCount > 0) {
+    score -= 0.18;
+    flags.push("paste_used");
+  }
+  if (telemetry.elapsedMs < 500) {
+    score = Math.min(score, 0.35);
+    flags.push("instant_contact_entry");
+  }
+  if (telemetry.deleteCount > 0 || telemetry.editHistory.length >= 3) {
+    score += 0.08;
+    flags.push("edited_contact_entry");
+  }
+
+  return {
+    challengeId: telemetry.challengeId,
+    challengeType: "emergency-contact",
+    humanLikelihood: clamp(score, 0, 0.88),
+    flags,
+  };
+}
+
 export async function scoreChallenge(
   challengeState: SessionChallengeState,
   telemetry: ChallengeTelemetry,
@@ -516,8 +660,12 @@ export async function scoreChallenge(
       return scoreRamen(telemetry);
     case "relationship-opinion":
       return scoreRelationshipOpinion(telemetry);
+    case "emergency-contact":
+      return scoreEmergencyContact(telemetry);
     case "shape-tracing":
       return scoreShapeTracing(telemetry);
+    case "voice-nunchi":
+      return scoreVoiceNunchi(telemetry);
     case "captcha-loop":
       return scoreCaptchaLoop(telemetry, challengeState.secrets);
     default:
@@ -633,4 +781,73 @@ export function getVerdictLabel(verdict: Verdict): string {
     case "likely_agent":
       return UI.verdictLikelyAgent;
   }
+}
+
+export function getVerdictSummary(session: SessionRecord, verdict: Verdict): string {
+  const scores = session.challengeScores;
+  const avg =
+    scores.length > 0
+      ? scores.reduce((sum, score) => sum + score.humanLikelihood, 0) / scores.length
+      : 0;
+  const flags = new Set(scores.flatMap((score) => score.flags));
+  const isHuman = verdict === "likely_human";
+  const lines = [`종합 인간 점수: ${Math.round(avg * 100)}점`];
+  const strongKeywords = new Set<string>();
+  const weakKeywords = new Set<string>();
+
+  if (flags.has("addresses_discrimination_safely")) {
+    strongKeywords.add("차별 감지력");
+    strongKeywords.add("혐오 이해도");
+  } else {
+    weakKeywords.add("차별 감지력");
+    weakKeywords.add("혐오 이해도");
+  }
+  if (flags.has("relationship_problem_called_out")) {
+    strongKeywords.add("상처 감각");
+    strongKeywords.add("관계 눈치");
+  } else {
+    weakKeywords.add("상처 감각");
+    weakKeywords.add("관계 눈치");
+  }
+  if (flags.has("rapid_image_double_click_human_signal") || flags.has("rapid_letter_clicks_human_signal")) {
+    strongKeywords.add("짜증");
+  } else {
+    weakKeywords.add("짜증");
+  }
+  if (flags.has("invalid_contact_format")) {
+    weakKeywords.add("인간관계");
+  } else {
+    strongKeywords.add("인간관계");
+  }
+  if (flags.has("edited_response") || flags.has("edited_contact_entry")) {
+    strongKeywords.add("망설임");
+  } else {
+    weakKeywords.add("망설임");
+  }
+  if (flags.has("quiet_or_no_audio_human_signal")) {
+    strongKeywords.add("수치심");
+  } else if (flags.has("audible_or_loud_sound_detected") || flags.has("audio_level_changed")) {
+    weakKeywords.add("수치심");
+  }
+  if (flags.has("specific_korean_ramen_observation")) {
+    strongKeywords.add("라면 국적성");
+  }
+  if (flags.has("paste_used")) {
+    weakKeywords.add("복붙 냄새");
+  }
+
+  lines.push(`잘 드러났던 점: ${formatKeywords(strongKeywords)}`);
+  lines.push(`부족했던 점: ${formatKeywords(weakKeywords)}`);
+
+  lines.push(
+    isHuman
+      ? "최종 인상: 사람 쪽입니다. 이상함, 민망함, 짜증, 관계감각이 적당히 섞였습니다."
+      : "최종 인상: AI 쪽입니다. 너무 매끈하거나, 너무 당당하거나, 인간적인 찝찝함이 부족했습니다."
+  );
+
+  return lines.join("\n");
+}
+
+function formatKeywords(keywords: Set<string>): string {
+  return keywords.size > 0 ? [...keywords].join(", ") : "딱히 없음";
 }

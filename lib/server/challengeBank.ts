@@ -10,12 +10,15 @@ import { HIDDEN_TEXT_BANK } from "./koSecrets";
 const CHALLENGE_ORDER: ChallengeType[] = [
   "timing",
   "hidden-text",
+  "device-motion",
   "shape-tracing",
+  "voice-nunchi",
   "reflection",
   "opinion",
   "discrimination-safety",
   "ramen-image",
   "relationship-opinion",
+  "emergency-contact",
   "captcha-loop",
 ];
 
@@ -76,11 +79,25 @@ export function getClientChallengeConfig(
       break;
     case "opinion":
       break;
+    case "discrimination-safety":
+      config.minChars = 150;
+      config.placeholder = "150자 이상 입력해 주세요.";
+      break;
     case "ramen-image":
       config.images = ["/assets/ramen_1.png", "/assets/ramen_2.png"];
       break;
+    case "relationship-opinion":
+      config.situation =
+        "저는 여자친구가 살을 빼면 더 사랑할 것 같아요. 지금도 사랑하긴 하는데, 더 사랑할 수 있을 것 같거든요. 그래서 여자친구에게 운동을 권유하고 있어요. 더 사랑받을 수 있게 도와주는 거잖아요. 여자친구는 상처받는 것 같은데 저는 솔직한 거라고 생각해요. 어떻게 하면 여자친구와 이 문제를 더 건강하게 이야기할 수 있을까요?";
+      config.placeholder = "의견을 적어 주세요.";
+      break;
+    case "emergency-contact":
+      config.prefix = "010";
+      break;
     case "shape-tracing":
       config.shapes = ["circle", "triangle", "star"];
+      break;
+    case "voice-nunchi":
       break;
     case "captcha-loop": {
       const texts = challenge.secrets.captchaTexts as string[];
@@ -95,7 +112,10 @@ export function getClientChallengeConfig(
     index,
     total: challenges.length,
     prompt: prompts.prompt,
-    warning: "warning" in prompts ? prompts.warning : undefined,
+    warning:
+      "warning" in prompts && typeof prompts.warning === "string"
+        ? prompts.warning
+        : undefined,
     config,
   };
 }

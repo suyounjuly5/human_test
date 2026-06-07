@@ -9,7 +9,7 @@ const notoSansKr = Noto_Sans_KR({
   preload: true,
 });
 
-const appName = process.env.NEXT_PUBLIC_APP_NAME || "당신은 사람인가요?";
+const appName = process.env.NEXT_PUBLIC_APP_NAME || "인간임을 증명하세요";
 
 export const metadata: Metadata = {
   title: appName,

@@ -7,7 +7,6 @@ import {
   touchSession,
 } from "@/lib/server/sessionStore";
 import { getClientChallengeConfig } from "@/lib/server/challengeBank";
-import { UI } from "@/lib/ko";
 import { scoreChallenge } from "@/lib/server/scoring";
 import type { ChallengeTelemetry } from "@/lib/types";
 
@@ -57,16 +56,6 @@ export async function POST(request: NextRequest) {
     const stale = isSessionStale(session);
     const score = await scoreChallenge(challengeState, telemetry, stale);
 
-    const isHuman = score.humanLikelihood >= 0.5;
-
-    if (!isHuman) {
-      return NextResponse.json({
-        action: "assessment",
-        assessmentLabel: UI.verdictLikelyAgent,
-        canContinue: false,
-      });
-    }
-
     recordChallengeSubmission(sessionId, challengeIndex, telemetry, score);
 
     const nextChallenge =
@@ -78,12 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      action: "assessment",
-      assessmentLabel:
-        challengeState.challengeType === "captcha-loop"
-          ? UI.captchaPassed
-          : UI.verdictLikelyHuman,
-      canContinue: true,
+      action: "continue",
       nextChallenge,
     });
   } catch {

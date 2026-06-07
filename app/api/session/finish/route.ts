@@ -4,7 +4,11 @@ import {
   finishSession,
   checkRateLimit,
 } from "@/lib/server/sessionStore";
-import { computeVerdict, getVerdictLabel } from "@/lib/server/scoring";
+import {
+  computeVerdict,
+  getVerdictLabel,
+  getVerdictSummary,
+} from "@/lib/server/scoring";
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -38,6 +42,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         verdict: session.verdict,
         verdictLabel: getVerdictLabel(session.verdict!),
+        verdictSummary: getVerdictSummary(session, session.verdict!),
         sessionId: session.id,
       });
     }
@@ -48,6 +53,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       verdict,
       verdictLabel: getVerdictLabel(verdict),
+      verdictSummary: getVerdictSummary(session, verdict),
       sessionId,
     });
   } catch {

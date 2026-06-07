@@ -19,6 +19,8 @@ const SHAPE_PATHS: Record<Shape, string> = {
   star: "M 100,15 L 118,75 L 185,75 L 130,110 L 150,170 L 100,135 L 50,170 L 70,110 L 15,75 L 82,75 Z",
 };
 
+const CANVAS_SIZE = 260;
+
 export default function ShapeTracingChallenge({ config, telemetry, onComplete }: Props) {
   const shapes = (config.shapes as Shape[]) ?? ["circle", "triangle", "star"];
   const [paths, setPaths] = useState<Record<Shape, DrawingPath | undefined>>(
@@ -47,7 +49,11 @@ export default function ShapeTracingChallenge({ config, telemetry, onComplete }:
     const guide = new Path2D(SHAPE_PATHS[shape]);
     ctx.strokeStyle = "#d4d4d4";
     ctx.lineWidth = 2;
+    ctx.save();
+    ctx.translate(30, 30);
+    ctx.scale(1.0, 1.0);
     ctx.stroke(guide);
+    ctx.restore();
 
     const savedPath = paths[shape];
     if (savedPath?.points.length && activeShape !== shape) {
@@ -126,8 +132,8 @@ export default function ShapeTracingChallenge({ config, telemetry, onComplete }:
               ref={(node) => {
                 canvasRefs.current[shape] = node;
               }}
-              width={200}
-              height={200}
+              width={CANVAS_SIZE}
+              height={CANVAS_SIZE}
               className="aspect-square w-full touch-none rounded-lg border border-neutral-200 bg-white"
               onMouseDown={(e) => startDraw(shape, e)}
               onMouseMove={(e) => draw(shape, e)}

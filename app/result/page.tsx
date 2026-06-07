@@ -7,10 +7,12 @@ import { UI } from "@/lib/ko";
 export default function ResultPage() {
   const [verdict, setVerdict] = useState<string | null>(null);
   const [label, setLabel] = useState<string | null>(null);
+  const [summary, setSummary] = useState<string | null>(null);
 
   useEffect(() => {
     setVerdict(sessionStorage.getItem("hfcl_verdict"));
     setLabel(sessionStorage.getItem("hfcl_verdict_label"));
+    setSummary(sessionStorage.getItem("hfcl_verdict_summary"));
   }, []);
 
   const isHuman = verdict === "likely_human";
@@ -26,7 +28,7 @@ export default function ResultPage() {
           : "bg-neutral-50"
       }`}
     >
-      <div className="space-y-6">
+      <div className="w-full max-w-2xl space-y-6">
         <p
           className={`rounded-lg border px-10 py-8 text-3xl font-bold shadow-sm ${
             hasResult
@@ -38,6 +40,17 @@ export default function ResultPage() {
         >
           {label ?? UI.resultEmpty}
         </p>
+        {summary && (
+          <div
+            className={`whitespace-pre-line rounded-lg border bg-white px-6 py-5 text-left text-base leading-7 shadow-sm ${
+              isHuman
+                ? "border-green-200 text-green-900"
+                : "border-red-200 text-red-900"
+            }`}
+          >
+            {summary}
+          </div>
+        )}
         <Link
           href="/"
           className={`inline-flex rounded-lg px-7 py-3 font-semibold text-white ${
