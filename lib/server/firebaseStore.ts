@@ -14,16 +14,29 @@ import type {
 const COLLECTION_NAME =
   process.env.FIREBASE_ATTEMPTS_COLLECTION || "human_test_attempts";
 
+function normalizeEnvValue(value: string | undefined): string {
+  const trimmed = value?.trim() ?? "";
+
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+
+  return trimmed;
+}
+
 function hasFirebaseConfig(): boolean {
   return Boolean(
-    process.env.FIREBASE_PROJECT_ID &&
-      process.env.FIREBASE_CLIENT_EMAIL &&
-      process.env.FIREBASE_PRIVATE_KEY
+    normalizeEnvValue(process.env.FIREBASE_PROJECT_ID) &&
+      normalizeEnvValue(process.env.FIREBASE_CLIENT_EMAIL) &&
+      normalizeEnvValue(process.env.FIREBASE_PRIVATE_KEY)
   );
 }
 
 function normalizePrivateKey(privateKey: string): string {
-  const key = privateKey.replace(/\\n/g, "\n");
+  const key = normalizeEnvValue(privateKey).replace(/\\n/g, "\n");
 
   if (key.includes("\n")) return key;
 
@@ -37,17 +50,22 @@ function normalizePrivateKey(privateKey: string): string {
 function getDb() {
   if (!hasFirebaseConfig()) return null;
 
-  if (getApps().length === 0) {
-    initializeApp({
-      credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: normalizePrivateKey(process.env.FIREBASE_PRIVATE_KEY ?? ""),
-      }),
-    });
-  }
+  try {
+    if (getApps().length === 0) {
+      initializeApp({
+        credential: cert({
+          projectId: normalizeEnvValue(process.env.FIREBASE_PROJECT_ID),
+          clientEmail: normalizeEnvValue(process.env.FIREBASE_CLIENT_EMAIL),
+          privateKey: normalizePrivateKey(process.env.FIREBASE_PRIVATE_KEY ?? ""),
+        }),
+      });
+    }
 
-  return getFirestore();
+    return getFirestore();
+  } catch (error) {
+    console.error("Failed to initialize Firebase Admin SDK", error);
+    return null;
+  }
 }
 
 function cleanForFirestore(value: unknown): unknown {
