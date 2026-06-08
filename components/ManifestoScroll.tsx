@@ -59,7 +59,7 @@ export default function ManifestoScroll() {
 
   const sceneCount = MANIFESTO_LINES.length + 1;
   const finalSceneIndex = sceneCount - 1;
-  const timelinePosition = scrollProgress * finalSceneIndex;
+  const timelinePosition = scrollProgress * finalSceneIndex + 0.5;
 
   return (
     <main
@@ -118,9 +118,9 @@ export default function ManifestoScroll() {
         <div
           className="absolute left-1/2 top-1/2 flex w-full justify-center"
           style={{
-            opacity: Math.max(0, 1 - Math.abs(timelinePosition - finalSceneIndex) * 2.7),
+            opacity: Math.max(0, 1 - Math.abs(timelinePosition - finalSceneIndex - 0.5) * 2.7),
             transform: `translate(-50%, -50%) translateX(${
-              125 - (timelinePosition - finalSceneIndex + 0.5) * 250
+              125 - (timelinePosition - finalSceneIndex) * 250
             }vw)`,
           }}
         >
