@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: "Yeonseong";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMYEONSUNG.woff")
+  font-family: "DosMyungjo";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_eight@1.0/DOSMyungjo.woff")
     format("woff");
   font-weight: normal;
   font-display: swap;
@@ -21,12 +21,17 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Yeonseong", system-ui, -apple-system, "Segoe UI", Roboto,
+  font-family: "DosMyungjo", system-ui, -apple-system, "Segoe UI", Roboto,
     sans-serif;
 }
 
 ::selection {
   background: rgba(255, 255, 255, 0.22);
+}
+
+.manifesto-bg-video {
+  max-width: none;
+  object-fit: cover;
 }
 
 .dark-page {

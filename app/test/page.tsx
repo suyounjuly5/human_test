@@ -22,7 +22,7 @@ export default function TestPage() {
         | undefined;
       if (navigation?.type === "reload") {
         sessionStorage.removeItem("hfcl_session_id");
-        router.replace("/");
+        router.replace("/verify");
         return;
       }
 
@@ -72,7 +72,7 @@ export default function TestPage() {
         <p className="text-red-300">{error ?? UI.errorGeneric}</p>
         <button
           type="button"
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/verify")}
           className="text-white/75 underline hover:text-white"
         >
           {UI.home}

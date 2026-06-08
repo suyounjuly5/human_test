@@ -59,7 +59,7 @@ export default function ChallengeRunner({
   } | null>(null);
   const telemetryRef = useRef<TelemetryCollector>(createTelemetryCollector());
   const submittingRef = useRef(false);
-  const agentSoundRef = useRef<HTMLAudioElement | null>(null);
+  const humanSoundRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     setError(null);
@@ -71,12 +71,12 @@ export default function ChallengeRunner({
     setChallenge(nextChallenge);
   }, []);
 
-  const playAgentSound = useCallback(() => {
-    if (!agentSoundRef.current) {
-      agentSoundRef.current = new Audio("/assets/glass.mp3");
+  const playHumanSound = useCallback(() => {
+    if (!humanSoundRef.current) {
+      humanSoundRef.current = new Audio("/assets/glass.mp3");
     }
 
-    const audio = agentSoundRef.current;
+    const audio = humanSoundRef.current;
     audio.currentTime = 0;
     void audio.play().catch(() => {
       // Browsers may block audio if the page has not received a trusted gesture.
@@ -110,8 +110,8 @@ export default function ChallengeRunner({
 
         const data = (await res.json()) as SubmitResponse;
 
-        if (data.challengeVerdict === "likely_agent") {
-          playAgentSound();
+        if (data.challengeVerdict === "likely_human") {
+          playHumanSound();
         }
 
         if (data.action === "retry") {
@@ -164,7 +164,7 @@ export default function ChallengeRunner({
         setSubmitting(false);
       }
     },
-    [challenge, sessionId, router, moveToChallenge, playAgentSound]
+    [challenge, sessionId, router, moveToChallenge, playHumanSound]
   );
 
   const telemetry = telemetryRef.current;

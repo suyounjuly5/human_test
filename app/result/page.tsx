@@ -42,7 +42,7 @@ export default function ResultPage() {
           </div>
         )}
         <Link
-          href="/"
+          href="/verify"
           className="dark-button inline-flex rounded-lg px-7 py-3 font-semibold"
         >
           테스트 다시하기

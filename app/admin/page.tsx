@@ -35,7 +35,7 @@ export default function AdminPage() {
       <div className="mx-auto max-w-4xl">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">{UI.adminTitle}</h1>
-        <Link href="/" className="text-sm text-white/70 underline hover:text-white">
+        <Link href="/verify" className="text-sm text-white/70 underline hover:text-white">
           {UI.home}
         </Link>
       </div>
