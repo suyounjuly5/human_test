@@ -60,20 +60,20 @@ export default function TestPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="text-neutral-500">{UI.preparing}</p>
+      <main className="dark-page flex items-center justify-center">
+        <p className="text-white/60">{UI.preparing}</p>
       </main>
     );
   }
 
   if (error || !sessionId || !challenge) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4">
-        <p className="text-red-600">{error ?? UI.errorGeneric}</p>
+      <main className="dark-page flex flex-col items-center justify-center gap-4">
+        <p className="text-red-300">{error ?? UI.errorGeneric}</p>
         <button
           type="button"
           onClick={() => router.push("/")}
-          className="text-blue-600 underline"
+          className="text-white/75 underline hover:text-white"
         >
           {UI.home}
         </button>
@@ -82,8 +82,8 @@ export default function TestPage() {
   }
 
   return (
-    <main>
-      <header className="border-b border-neutral-200 bg-white px-4 py-3 text-center text-sm font-medium text-neutral-700">
+    <main className="dark-page">
+      <header className="relative z-10 border-b border-white/10 bg-black/35 px-4 py-3 text-center text-sm font-medium text-white/70 backdrop-blur-md">
         {UI.headerTest}
       </header>
       <ChallengeRunner

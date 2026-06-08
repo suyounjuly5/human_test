@@ -139,33 +139,33 @@ export default function VoiceNunchiChallenge({ telemetry, onComplete }: Props) {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8 text-center">
-      <div className="mx-auto flex max-w-md flex-col items-center gap-6 rounded-lg border border-neutral-200 bg-neutral-50 px-6 py-7">
-        <p className="text-sm font-medium leading-6 text-neutral-500">
+      <div className="mx-auto flex max-w-md flex-col items-center gap-6 rounded-lg border border-white/[0.14] bg-white/[0.06] px-6 py-7">
+        <p className="text-sm font-medium leading-6 text-white/[0.58]">
           마이크 버튼을 켜고 '눈치게임 1'이라고 외쳐주세요.
         </p>
 
         <div className="relative flex h-28 w-28 items-center justify-center">
           <div
             className={`absolute inset-0 rounded-full transition-all ${
-              state === "recording" ? "bg-blue-100" : "bg-white"
+              state === "recording" ? "bg-white/[0.18]" : "bg-white/[0.06]"
             }`}
             style={{ transform: `scale(${1 + level * 0.12})` }}
           />
-          <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-neutral-200 bg-white shadow-sm">
-            <div className="relative h-11 w-7 rounded-full bg-blue-600">
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-white/[0.18] bg-black/35 shadow-sm">
+            <div className="relative h-11 w-7 rounded-full bg-white/[0.85]">
               <div className="absolute left-1/2 top-2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-white/70" />
-              <div className="absolute -bottom-4 left-1/2 h-4 w-0.5 -translate-x-1/2 bg-blue-600" />
-              <div className="absolute -bottom-4 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-blue-600" />
+              <div className="absolute -bottom-4 left-1/2 h-4 w-0.5 -translate-x-1/2 bg-white/[0.85]" />
+              <div className="absolute -bottom-4 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-white/[0.85]" />
             </div>
           </div>
         </div>
 
-        <div className="flex h-28 w-full max-w-sm items-end justify-center gap-1.5 rounded-lg bg-white px-4 py-4 shadow-inner">
+        <div className="flex h-28 w-full max-w-sm items-end justify-center gap-1.5 rounded-lg bg-black/35 px-4 py-4 shadow-inner">
           {levelHistory.map((value, index) => (
             <div
               key={index}
               className={`w-2.5 rounded-full transition-all duration-100 ${
-                state === "recording" ? "bg-blue-600" : "bg-neutral-300"
+                state === "recording" ? "bg-white" : "bg-white/[0.28]"
               }`}
               style={{
                 height: `${Math.max(10, value * 92)}px`,
@@ -175,7 +175,7 @@ export default function VoiceNunchiChallenge({ telemetry, onComplete }: Props) {
           ))}
         </div>
 
-        <p className="text-sm font-medium text-neutral-500">
+        <p className="text-sm font-medium text-white/55">
           {state === "recording"
             ? "소리 크기를 측정하고 있습니다."
             : state === "ready"
@@ -189,7 +189,7 @@ export default function VoiceNunchiChallenge({ telemetry, onComplete }: Props) {
           <button
             type="button"
             onClick={startRecording}
-            className="rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white hover:bg-blue-700"
+            className="dark-button rounded-lg px-8 py-3 text-base font-semibold"
           >
             마이크 켜기
           </button>
@@ -198,7 +198,7 @@ export default function VoiceNunchiChallenge({ telemetry, onComplete }: Props) {
           <button
             type="button"
             onClick={stopRecording}
-            className="rounded-lg bg-red-600 px-8 py-3 text-base font-semibold text-white hover:bg-red-700"
+            className="rounded-lg bg-red-500/30 px-8 py-3 text-base font-semibold text-white hover:bg-red-500/40"
           >
             녹음 멈추기
           </button>
@@ -208,14 +208,14 @@ export default function VoiceNunchiChallenge({ telemetry, onComplete }: Props) {
             <button
               type="button"
               onClick={startRecording}
-              className="rounded-lg border border-neutral-300 px-8 py-3 text-base font-semibold text-neutral-700 hover:border-neutral-400"
+              className="rounded-lg border border-white/20 px-8 py-3 text-base font-semibold text-white/75 hover:border-white/40"
             >
               다시 녹음
             </button>
             <button
               type="button"
               onClick={handleSubmit}
-              className="rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white hover:bg-blue-700"
+              className="dark-button rounded-lg px-8 py-3 text-base font-semibold"
             >
               {UI.submit}
             </button>
@@ -223,8 +223,8 @@ export default function VoiceNunchiChallenge({ telemetry, onComplete }: Props) {
         )}
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <p className="text-sm text-neutral-500">
+      {error && <p className="text-sm text-red-300">{error}</p>}
+      <p className="text-sm text-white/50">
         음성 파일은 저장하지 않고, 소리 크기 변화만 기록합니다.
       </p>
     </div>

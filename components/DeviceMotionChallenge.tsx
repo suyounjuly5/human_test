@@ -275,7 +275,7 @@ export default function DeviceMotionChallenge({ config, telemetry, onComplete }:
 
   if (mode === "checking" || mode === "permission") {
     return (
-      <div className="mx-auto max-w-md rounded-lg border border-neutral-200 bg-neutral-50 p-6 text-center text-sm text-neutral-500">
+      <div className="mx-auto max-w-md rounded-lg border border-white/[0.14] bg-white/[0.06] p-6 text-center text-sm text-white/55">
         <p>{mode === "permission" ? UI.motionPermission : UI.detectingDevice}</p>
       </div>
     );
@@ -285,27 +285,27 @@ export default function DeviceMotionChallenge({ config, telemetry, onComplete }:
     <div className="mx-auto max-w-xl">
       {mode === "sensor-motion" ? (
         <div className="text-center">
-          <p className="text-5xl font-bold text-blue-600">
+          <p className="text-5xl font-bold text-white">
             {isComplete ? "통과하셨습니다" : moveCount}
           </p>
           {!isComplete && (
-            <p className="mt-2 text-sm font-medium text-neutral-500">{moveCount} / {required}</p>
+            <p className="mt-2 text-sm font-medium text-white/55">{moveCount} / {required}</p>
           )}
-          <div className="mt-6 rounded-lg border border-neutral-200 bg-neutral-50 p-10">
-            <LaptopIcon className="mx-auto h-28 w-36 text-blue-700" />
+          <div className="mt-6 rounded-lg border border-white/[0.14] bg-black/30 p-10">
+            <LaptopIcon className="mx-auto h-28 w-36 text-white/80" />
           </div>
         </div>
       ) : (
         <div className="text-center">
-          <p className="text-5xl font-bold text-blue-600">
+          <p className="text-5xl font-bold text-white">
             {isComplete ? "통과하셨습니다" : moveCount}
           </p>
           {!isComplete && (
-            <p className="mt-2 text-sm font-medium text-neutral-500">{moveCount} / {required}</p>
+            <p className="mt-2 text-sm font-medium text-white/55">{moveCount} / {required}</p>
           )}
-          <div className="relative mt-6 h-80 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 touch-none">
+          <div className="relative mt-6 h-80 touch-none overflow-hidden rounded-lg border border-white/[0.14] bg-black/30">
             <div
-              className="absolute left-1/2 grid h-28 w-40 cursor-grab select-none place-items-center rounded-lg bg-white shadow-sm ring-1 ring-neutral-200 transition-shadow active:cursor-grabbing active:shadow-md"
+              className="absolute left-1/2 grid h-28 w-40 cursor-grab select-none place-items-center rounded-lg bg-white/[0.12] shadow-sm ring-1 ring-white/[0.18] transition-shadow active:cursor-grabbing active:shadow-md"
               style={{ top: `${dragY}%`, transform: "translate(-50%, -50%)" }}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
@@ -316,7 +316,7 @@ export default function DeviceMotionChallenge({ config, telemetry, onComplete }:
               aria-label={UI.dragFallbackInstruction}
               tabIndex={0}
             >
-              <LaptopIcon className="h-20 w-28 text-blue-700" />
+              <LaptopIcon className="h-20 w-28 text-white/80" />
             </div>
           </div>
         </div>
@@ -328,8 +328,8 @@ export default function DeviceMotionChallenge({ config, telemetry, onComplete }:
 function LaptopIcon({ className }: { className?: string }) {
   return (
     <div className={className} aria-hidden="true">
-      <div className="mx-auto h-[68%] w-[78%] rounded-t-lg border-[6px] border-current bg-blue-50 p-2">
-        <div className="h-full rounded-sm bg-blue-100" />
+      <div className="mx-auto h-[68%] w-[78%] rounded-t-lg border-[6px] border-current bg-white/10 p-2">
+        <div className="h-full rounded-sm bg-white/15" />
       </div>
       <div className="mx-auto h-[10%] w-full rounded-b-xl bg-current" />
       <div className="mx-auto h-[4%] w-[52%] rounded-b bg-current opacity-70" />

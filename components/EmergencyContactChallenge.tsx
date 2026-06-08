@@ -95,14 +95,14 @@ export default function EmergencyContactChallenge({
         }}
         autoComplete="off"
         placeholder="구체적인 대상"
-        className="mx-auto block h-11 w-full max-w-xs rounded-lg border border-neutral-300 px-4 text-center text-base font-semibold text-neutral-950 placeholder:text-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="dark-field mx-auto block h-11 w-full max-w-xs rounded-lg px-4 text-center text-base font-semibold"
       />
 
       <div className="flex items-center justify-center gap-3 sm:gap-4">
-        <div className="flex h-16 w-24 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 text-2xl font-semibold text-neutral-500">
+        <div className="flex h-16 w-24 items-center justify-center rounded-lg border border-white/[0.14] bg-black/30 text-2xl font-semibold text-white/55">
           {prefix}
         </div>
-        <span className="text-2xl font-semibold text-neutral-400">-</span>
+        <span className="text-2xl font-semibold text-white/45">-</span>
         <input
           aria-label="비상 연락처 가운데 네 자리"
           value={middle}
@@ -117,9 +117,9 @@ export default function EmergencyContactChallenge({
           autoComplete="off"
           maxLength={4}
           placeholder="□□□□"
-          className="h-16 w-28 rounded-lg border border-neutral-300 text-center text-2xl font-semibold tracking-widest text-neutral-950 placeholder:text-neutral-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:w-32"
+          className="dark-field h-16 w-28 rounded-lg text-center text-2xl font-semibold tracking-widest sm:w-32"
         />
-        <span className="text-2xl font-semibold text-neutral-400">-</span>
+        <span className="text-2xl font-semibold text-white/45">-</span>
         <input
           ref={lastInputRef}
           aria-label="비상 연락처 마지막 네 자리"
@@ -135,14 +135,14 @@ export default function EmergencyContactChallenge({
           autoComplete="off"
           maxLength={4}
           placeholder="□□□□"
-          className="h-16 w-28 rounded-lg border border-neutral-300 text-center text-2xl font-semibold tracking-widest text-neutral-950 placeholder:text-neutral-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:w-32"
+          className="dark-field h-16 w-28 rounded-lg text-center text-2xl font-semibold tracking-widest sm:w-32"
         />
       </div>
 
       <button
         type="submit"
         disabled={!isComplete}
-        className="rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white hover:bg-blue-700 disabled:bg-neutral-300"
+        className="dark-button rounded-lg px-8 py-3 text-base font-semibold"
       >
         {UI.submit}
       </button>

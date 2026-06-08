@@ -13,11 +13,14 @@ interface Props {
 
 export default function RamenImageChallenge({ config, telemetry, onComplete }: Props) {
   const images = (config.images as string[]) ?? [];
+  const minChars = (config.minChars as number | undefined) ?? 1;
   const [answer, setAnswer] = useState("");
+  const trimmedLength = answer.trim().length;
+  const canSubmit = trimmedLength >= minChars;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!answer.trim()) return;
+    if (!canSubmit) return;
     onComplete({ answer: answer.trim() });
   };
 
@@ -27,7 +30,7 @@ export default function RamenImageChallenge({ config, telemetry, onComplete }: P
         {images.map((src, i) => (
           <div
             key={src}
-            className="relative aspect-[4/3] overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100"
+            className="relative aspect-[4/3] overflow-hidden rounded-lg border border-white/[0.14] bg-black/30"
           >
             <Image
               src={src}
@@ -52,13 +55,19 @@ export default function RamenImageChallenge({ config, telemetry, onComplete }: P
         onBlur={() => telemetry.onBlur()}
         rows={5}
         placeholder={UI.ramenPlaceholder}
-        className="w-full rounded-lg border border-neutral-300 px-4 py-3 text-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="dark-field w-full rounded-lg px-4 py-3 text-lg"
       />
+
+      {minChars > 1 && (
+        <p className={`text-right text-sm ${canSubmit ? "text-green-200" : "text-white/50"}`}>
+          {trimmedLength} / {minChars}자
+        </p>
+      )}
 
       <button
         type="submit"
-        disabled={!answer.trim()}
-        className="rounded-lg bg-blue-600 px-7 py-3 text-white hover:bg-blue-700 disabled:bg-neutral-300"
+        disabled={!canSubmit}
+        className="dark-button rounded-lg px-7 py-3"
       >
         {UI.submit}
       </button>

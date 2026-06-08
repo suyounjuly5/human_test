@@ -20,42 +20,30 @@ export default function ResultPage() {
 
   return (
     <main
-      className={`flex min-h-screen items-center justify-center px-4 text-center ${
-        hasResult
-          ? isHuman
-            ? "bg-green-50"
-            : "bg-red-50"
-          : "bg-neutral-50"
-      }`}
+      className="dark-page flex items-center justify-center px-4 text-center"
     >
       <div className="w-full max-w-2xl space-y-6">
         <p
-          className={`rounded-lg border px-10 py-8 text-3xl font-bold shadow-sm ${
+          className={`dark-panel rounded-lg px-10 py-8 text-3xl font-bold ${
             hasResult
               ? isHuman
-                ? "border-green-200 bg-white text-green-800"
-                : "border-red-300 bg-white text-red-700"
-              : "border-neutral-200 bg-white text-neutral-700"
+                ? "text-green-200"
+                : "text-red-200"
+              : "text-white/75"
           }`}
         >
           {label ?? UI.resultEmpty}
         </p>
         {summary && (
           <div
-            className={`whitespace-pre-line rounded-lg border bg-white px-6 py-5 text-left text-base leading-7 shadow-sm ${
-              isHuman
-                ? "border-green-200 text-green-900"
-                : "border-red-200 text-red-900"
-            }`}
+            className="dark-panel whitespace-pre-line rounded-lg px-6 py-5 text-left text-base leading-7 text-white/[0.82]"
           >
             {summary}
           </div>
         )}
         <Link
           href="/"
-          className={`inline-flex rounded-lg px-7 py-3 font-semibold text-white ${
-            isHuman ? "bg-green-700 hover:bg-green-800" : "bg-red-700 hover:bg-red-800"
-          }`}
+          className="dark-button inline-flex rounded-lg px-7 py-3 font-semibold"
         >
           테스트 다시하기
         </Link>

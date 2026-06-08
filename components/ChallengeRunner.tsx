@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ClientChallengeConfig } from "@/lib/types";
+import type { ClientChallengeConfig, SubmitResponse } from "@/lib/types";
 import {
   createTelemetryCollector,
   type TelemetryCollector,
@@ -27,6 +27,21 @@ interface Props {
   sessionId: string;
 }
 
+const CHALLENGE_BACKGROUND_CLASSES = [
+  "challenge-bg-finger",
+  "challenge-bg-eye",
+  "challenge-bg-body",
+  "challenge-bg-finger",
+  "challenge-bg-brain",
+  "challenge-bg-head",
+  "challenge-bg-leg",
+  "challenge-bg-body",
+  "challenge-bg-eye",
+  "challenge-bg-brain",
+  "challenge-bg-head",
+  "challenge-bg-body",
+];
+
 export default function ChallengeRunner({
   initialChallenge,
   allChallenges,
@@ -43,16 +58,35 @@ export default function ChallengeRunner({
     nextChallenge?: ClientChallengeConfig;
   } | null>(null);
   const telemetryRef = useRef<TelemetryCollector>(createTelemetryCollector());
+  const submittingRef = useRef(false);
+  const agentSoundRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    telemetryRef.current = createTelemetryCollector();
     setError(null);
     setAssessment(null);
   }, [challenge.challengeId]);
 
+  const moveToChallenge = useCallback((nextChallenge: ClientChallengeConfig) => {
+    telemetryRef.current = createTelemetryCollector();
+    setChallenge(nextChallenge);
+  }, []);
+
+  const playAgentSound = useCallback(() => {
+    if (!agentSoundRef.current) {
+      agentSoundRef.current = new Audio("/assets/glass.mp3");
+    }
+
+    const audio = agentSoundRef.current;
+    audio.currentTime = 0;
+    void audio.play().catch(() => {
+      // Browsers may block audio if the page has not received a trusted gesture.
+    });
+  }, []);
+
   const handleComplete = useCallback(
     async (extras: Record<string, unknown>) => {
-      if (submitting) return;
+      if (submittingRef.current) return;
+      submittingRef.current = true;
       setSubmitting(true);
       setError(null);
 
@@ -74,13 +108,18 @@ export default function ChallengeRunner({
           throw new Error(data.error ?? UI.errorSubmit);
         }
 
-        const data = await res.json();
+        const data = (await res.json()) as SubmitResponse;
+
+        if (data.challengeVerdict === "likely_agent") {
+          playAgentSound();
+        }
 
         if (data.action === "retry") {
           telemetryRef.current = createTelemetryCollector();
           if (data.nextChallenge) setChallenge(data.nextChallenge);
           setRetryCount((count) => count + 1);
           setError(data.message ?? UI.errorGeneric);
+          submittingRef.current = false;
           setSubmitting(false);
           return;
         }
@@ -91,6 +130,7 @@ export default function ChallengeRunner({
             canContinue: Boolean(data.canContinue),
             nextChallenge: data.nextChallenge,
           });
+          submittingRef.current = false;
           setSubmitting(false);
           return;
         }
@@ -114,22 +154,24 @@ export default function ChallengeRunner({
         }
 
         if (data.nextChallenge) {
-          setChallenge(data.nextChallenge);
+          moveToChallenge(data.nextChallenge);
+          submittingRef.current = false;
           setSubmitting(false);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : UI.errorGeneric);
+        submittingRef.current = false;
         setSubmitting(false);
       }
     },
-    [challenge, sessionId, submitting, router]
+    [challenge, sessionId, router, moveToChallenge, playAgentSound]
   );
 
   const telemetry = telemetryRef.current;
 
   const handleAssessmentNext = () => {
     if (!assessment?.nextChallenge) return;
-    setChallenge(assessment.nextChallenge);
+    moveToChallenge(assessment.nextChallenge);
     setAssessment(null);
   };
 
@@ -168,7 +210,11 @@ export default function ChallengeRunner({
         );
       case "reflection":
         return (
-          <ReflectionChallenge telemetry={telemetry} onComplete={handleComplete} />
+          <ReflectionChallenge
+            config={challenge.config}
+            telemetry={telemetry}
+            onComplete={handleComplete}
+          />
         );
       case "opinion":
         return (
@@ -183,6 +229,7 @@ export default function ChallengeRunner({
           <WritingChallenge
             telemetry={telemetry}
             onComplete={handleComplete}
+            minChars={(challenge.config.minChars as number) ?? 50}
             situation={challenge.config.situation as string | undefined}
             placeholder={(challenge.config.placeholder as string | undefined) ?? UI.reflectionPlaceholder}
           />
@@ -243,69 +290,77 @@ export default function ChallengeRunner({
 
   const assessmentIsHuman = Boolean(assessment?.canContinue);
   const minChars = challenge.config.minChars as number | undefined;
+  const backgroundClass =
+    CHALLENGE_BACKGROUND_CLASSES[challenge.index] ?? "challenge-bg-body";
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-10 sm:px-6 sm:py-14">
-      <ProgressBar current={challenge.index} total={challenge.total} />
+    <>
+      <div
+        className={`challenge-page-bg ${backgroundClass}`}
+        aria-hidden="true"
+      />
+      <div className="relative z-10 mx-auto max-w-5xl px-5 py-10 sm:px-6 sm:py-14">
+        <ProgressBar current={challenge.index} total={challenge.total} />
 
-      <div className="mb-6 rounded-lg border border-neutral-200 bg-white p-7 shadow-sm sm:p-10">
-        <h2
-          className="mb-8 text-center text-xl font-semibold leading-relaxed tracking-normal text-neutral-950 sm:text-2xl"
-        >
-          {challenge.prompt}
-          {minChars && (
-            <span className="ml-2 align-middle text-xs font-medium text-neutral-400">
-              최소 {minChars}자
-            </span>
-          )}
-        </h2>
-
-        {challenge.warning && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {challenge.warning}
-          </div>
-        )}
-
-        {assessment ? (
-          <div
-            className={`space-y-6 rounded-lg border p-8 text-center ${
-              assessmentIsHuman
-                ? "border-green-200 bg-green-50 text-green-900"
-                : "border-red-200 bg-red-50 text-red-800"
-            }`}
+        <div className="dark-panel mb-6 rounded-lg p-7 sm:p-10">
+          <h2
+            className="mb-8 text-center text-xl font-semibold leading-relaxed tracking-normal text-white sm:text-2xl"
           >
-            <p className="text-4xl font-bold sm:text-5xl">{assessment.label}</p>
-            {assessment.canContinue ? (
-              <button
-                type="button"
-                onClick={handleAssessmentNext}
-                className="rounded-lg bg-green-700 px-8 py-3 text-base font-semibold text-white hover:bg-green-800"
-              >
-                {UI.next}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleAssessmentRetry}
-                className="rounded-lg bg-red-700 px-8 py-3 text-base font-semibold text-white hover:bg-red-800"
-              >
-                {UI.retry}
-              </button>
+            {challenge.prompt}
+            {minChars && (
+              <span className="ml-2 align-middle text-xs font-medium text-white/45">
+                최소 {minChars}자
+              </span>
             )}
-          </div>
-        ) : (
-          <div key={`${challenge.challengeId}-${retryCount}`}>
-            {renderChallenge()}
-          </div>
-        )}
+          </h2>
 
-        {submitting && (
-          <p className="mt-4 text-center text-sm text-neutral-500">{UI.processing}</p>
-        )}
-        {error && (
-          <p className="mt-4 text-center text-sm text-red-600">{error}</p>
-        )}
+          {challenge.warning && (
+            <div className="mb-6 rounded-lg border border-red-300/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+              {challenge.warning}
+            </div>
+          )}
+
+          {assessment ? (
+            <div
+              className={`space-y-6 rounded-lg border p-8 text-center ${
+                assessmentIsHuman
+                  ? "border-green-300/30 bg-green-500/10 text-green-100"
+                  : "border-red-300/30 bg-red-500/10 text-red-100"
+              }`}
+            >
+              <p className="text-4xl font-bold sm:text-5xl">{assessment.label}</p>
+              {assessment.canContinue ? (
+                <button
+                  type="button"
+                  onClick={handleAssessmentNext}
+                  className="rounded-lg bg-green-500/[0.24] px-8 py-3 text-base font-semibold text-white hover:bg-green-500/[0.34]"
+                >
+                  {UI.next}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleAssessmentRetry}
+                  className="rounded-lg bg-red-500/[0.24] px-8 py-3 text-base font-semibold text-white hover:bg-red-500/[0.34]"
+                >
+                  {UI.retry}
+                </button>
+              )}
+            </div>
+          ) : (
+            <div key={`${challenge.challengeId}-${retryCount}`}>
+              {renderChallenge()}
+            </div>
+          )}
+
+          {submitting && (
+            <p className="mt-4 text-center text-sm text-white/55">{UI.processing}</p>
+          )}
+          {error && (
+            <p className="mt-4 text-center text-sm text-red-300">{error}</p>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

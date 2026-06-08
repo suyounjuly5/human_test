@@ -47,7 +47,7 @@ export default function ShapeTracingChallenge({ config, telemetry, onComplete }:
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const guide = new Path2D(SHAPE_PATHS[shape]);
-    ctx.strokeStyle = "#d4d4d4";
+    ctx.strokeStyle = "rgba(255,255,255,0.46)";
     ctx.lineWidth = 2;
     ctx.save();
     ctx.translate(30, 30);
@@ -125,7 +125,7 @@ export default function ShapeTracingChallenge({ config, telemetry, onComplete }:
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {shapes.map((shape, idx) => (
           <div key={shape} className="space-y-2">
-            <p className="text-center text-xs font-medium text-neutral-500">
+            <p className="text-center text-xs font-medium text-white/50">
               {UI.shapeLabel(shape, idx, shapes.length)}
             </p>
             <canvas
@@ -134,7 +134,7 @@ export default function ShapeTracingChallenge({ config, telemetry, onComplete }:
               }}
               width={CANVAS_SIZE}
               height={CANVAS_SIZE}
-              className="aspect-square w-full touch-none rounded-lg border border-neutral-200 bg-white"
+              className="aspect-square w-full touch-none rounded-lg border border-white/[0.14] bg-black/30"
               onMouseDown={(e) => startDraw(shape, e)}
               onMouseMove={(e) => draw(shape, e)}
               onMouseUp={() => endDraw(shape)}
@@ -151,7 +151,7 @@ export default function ShapeTracingChallenge({ config, telemetry, onComplete }:
         type="button"
         disabled={!allDone}
         onClick={handleSubmit}
-        className="rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 disabled:bg-neutral-300"
+        className="dark-button rounded-lg px-6 py-2"
       >
         {UI.submit}
       </button>
@@ -165,7 +165,7 @@ function drawLine(
 ) {
   if (points.length < 2) return;
   ctx.beginPath();
-  ctx.strokeStyle = "#2563eb";
+  ctx.strokeStyle = "rgba(255,255,255,0.9)";
   ctx.lineWidth = 2.5;
   ctx.moveTo(points[0].x, points[0].y);
   for (let i = 1; i < points.length; i++) {

@@ -146,6 +146,7 @@ export interface ClientChallengeConfig {
 export interface SubmitResponse {
   action: "continue" | "finish" | "retry" | "assessment";
   nextChallenge?: ClientChallengeConfig;
+  challengeVerdict?: Verdict;
   message?: string;
   assessmentLabel?: string;
   canContinue?: boolean;

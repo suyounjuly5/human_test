@@ -696,10 +696,10 @@ export function computeVerdict(session: SessionRecord): Verdict {
   const inconclusiveCount = scores.filter((c) => c.inconclusive).length;
 
   // Deterministic thresholds ? server-side only
-  if (inconclusiveCount >= 2 || avg < 0.35 || suspiciousFlags.length >= 4) {
+  if (inconclusiveCount >= 3 || avg < 0.3 || suspiciousFlags.length >= 5) {
     return "likely_agent";
   }
-  if (avg >= 0.62 && suspiciousFlags.length <= 1) {
+  if (avg >= 0.56 && suspiciousFlags.length <= 4) {
     return "likely_human";
   }
   return "suspicious";

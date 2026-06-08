@@ -8,7 +8,7 @@ import {
 } from "@/lib/server/sessionStore";
 import { getClientChallengeConfig } from "@/lib/server/challengeBank";
 import { scoreChallenge } from "@/lib/server/scoring";
-import type { ChallengeTelemetry } from "@/lib/types";
+import type { ChallengeScore, ChallengeTelemetry, Verdict } from "@/lib/types";
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -46,8 +46,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Session already finished" }, { status: 400 });
     }
 
-    const challengeState = session.challenges[challengeIndex];
-    if (!challengeState || challengeState.challengeId !== telemetry.challengeId) {
+    const resolvedChallengeIndex = session.challenges.findIndex(
+      (challenge) => challenge.challengeId === telemetry.challengeId
+    );
+    const challengeState = session.challenges[resolvedChallengeIndex];
+
+    if (resolvedChallengeIndex === -1 || !challengeState) {
       return NextResponse.json({ error: "Invalid challenge" }, { status: 400 });
     }
 
@@ -56,23 +60,33 @@ export async function POST(request: NextRequest) {
     const stale = isSessionStale(session);
     const score = await scoreChallenge(challengeState, telemetry, stale);
 
-    recordChallengeSubmission(sessionId, challengeIndex, telemetry, score);
+    recordChallengeSubmission(sessionId, resolvedChallengeIndex, telemetry, score);
 
     const nextChallenge =
-      findNextUnscoredChallenge(session.challenges, challengeIndex) ??
+      findNextUnscoredChallenge(session.challenges, resolvedChallengeIndex) ??
       null;
 
     if (!nextChallenge) {
-      return NextResponse.json({ action: "finish" });
+      return NextResponse.json({
+        action: "finish",
+        challengeVerdict: getChallengeVerdict(score),
+      });
     }
 
     return NextResponse.json({
       action: "continue",
       nextChallenge,
+      challengeVerdict: getChallengeVerdict(score),
     });
   } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
+}
+
+function getChallengeVerdict(score: ChallengeScore): Verdict {
+  if (score.humanLikelihood < 0.35) return "likely_agent";
+  if (score.humanLikelihood >= 0.62 && !score.inconclusive) return "likely_human";
+  return "suspicious";
 }
 
 function findNextUnscoredChallenge(

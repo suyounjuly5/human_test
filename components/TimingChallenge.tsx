@@ -75,9 +75,13 @@ export default function TimingChallenge({ telemetry, onComplete }: Props) {
 
   return (
     <div className="space-y-8 text-center">
-      <div className="text-7xl font-mono tabular-nums text-neutral-800">
+      <div
+        className={`font-mono text-7xl tabular-nums text-white ${
+          phase === "running" ? "invisible" : ""
+        }`}
+      >
         <span>{(elapsed / 1000).toFixed(1)}</span>
-        <span className="ml-1 align-baseline text-3xl font-semibold text-neutral-500">
+        <span className="ml-1 align-baseline text-3xl font-semibold text-white/50">
           초
         </span>
       </div>
@@ -86,7 +90,7 @@ export default function TimingChallenge({ telemetry, onComplete }: Props) {
         <button
           type="button"
           onClick={handleStart}
-          className="rounded-lg bg-blue-600 px-10 py-4 text-lg font-semibold text-white hover:bg-blue-700"
+          className="dark-button rounded-lg px-10 py-4 text-lg font-semibold"
         >
           {UI.start}
         </button>
@@ -96,14 +100,14 @@ export default function TimingChallenge({ telemetry, onComplete }: Props) {
         <button
           type="button"
           onClick={handleStop}
-          className="rounded-lg bg-red-600 px-10 py-4 text-lg font-semibold text-white transition-all hover:bg-red-700"
+          className="rounded-lg bg-red-500/30 px-10 py-4 text-lg font-semibold text-white transition-all hover:bg-red-500/40"
         >
           {UI.stop}
         </button>
       )}
 
       {phase !== "done" && (
-        <p className="text-sm text-neutral-400">{UI.timingKeyHint}</p>
+        <p className="text-sm text-white/45">{UI.timingKeyHint}</p>
       )}
     </div>
   );

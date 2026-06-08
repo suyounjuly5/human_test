@@ -1,17 +1,120 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Yeonseong";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMYEONSUNG.woff")
+    format("woff");
+  font-weight: normal;
+  font-display: swap;
+}
+
 :root {
-  --background: #fafafa;
-  --foreground: #171717;
-  --accent: #2563eb;
+  --background: #050505;
+  --foreground: #f5f5f5;
+  --accent: #f5f5f5;
   --warning: #dc2626;
-  --muted: #737373;
-  --card: #ffffff;
-  --border: #e5e5e5;
+  --muted: #a3a3a3;
+  --card: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.18);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: "Yeonseong", system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.dark-page {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.62)),
+    url("/assets/human.png") center / cover no-repeat fixed,
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.08), transparent 34%),
+    #050505;
+  color: #f5f5f5;
+}
+
+.challenge-page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.challenge-page-bg::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.challenge-bg-finger {
+  background-image: url("/assets/finger.png");
+}
+
+.challenge-bg-eye {
+  background-image: url("/assets/eye.png");
+}
+
+.challenge-bg-body {
+  background-image: url("/assets/body.png");
+}
+
+.challenge-bg-brain {
+  background-image: url("/assets/brain.png");
+  background-size: contain;
+}
+
+.challenge-bg-head {
+  background-image: url("/assets/head.png");
+}
+
+.challenge-bg-leg {
+  background-image: url("/assets/leg.png");
+}
+
+.dark-panel {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.075);
+  box-shadow: 0 18px 70px rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(12px);
+}
+
+.dark-field {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.34);
+  color: #f5f5f5;
+}
+
+.dark-field::placeholder {
+  color: rgba(245, 245, 245, 0.42);
+}
+
+.dark-field:focus {
+  border-color: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.34);
+  outline: none;
+}
+
+.dark-button {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  transition: background 160ms ease, opacity 160ms ease;
+}
+
+.dark-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.dark-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
 }

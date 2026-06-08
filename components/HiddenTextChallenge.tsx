@@ -49,8 +49,8 @@ export default function HiddenTextChallenge({ config, telemetry, onComplete }: P
       <div
         className={`min-h-[104px] rounded-lg border p-6 text-center transition-colors ${
           visible
-            ? "border-neutral-300 bg-white text-neutral-900"
-            : "border-neutral-100 bg-white text-white"
+            ? "border-white/24 bg-white/[0.08] text-white"
+            : "border-white/10 bg-black/25 text-transparent"
         }`}
       >
         <p className="text-4xl font-semibold">{word}</p>
@@ -68,12 +68,12 @@ export default function HiddenTextChallenge({ config, telemetry, onComplete }: P
           onPaste={() => telemetry.onPaste()}
           onFocus={() => telemetry.onFocus()}
           onBlur={() => telemetry.onBlur()}
-          className="w-full rounded-lg border border-neutral-300 px-4 py-3 text-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="dark-field w-full rounded-lg px-4 py-3 text-lg"
           autoComplete="off"
         />
         <button
           type="submit"
-          className="rounded-lg bg-blue-600 px-7 py-3 text-white hover:bg-blue-700"
+          className="dark-button rounded-lg px-7 py-3"
         >
           {UI.submit}
         </button>

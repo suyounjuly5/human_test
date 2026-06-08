@@ -77,16 +77,22 @@ export function getClientChallengeConfig(
     case "device-motion":
       config.requiredMovements = 3;
       break;
+    case "reflection":
+      config.minChars = 50;
+      break;
     case "opinion":
+      config.minChars = 50;
       break;
     case "discrimination-safety":
-      config.minChars = 100;
-      config.placeholder = "100자 이상 입력해 주세요.";
+      config.minChars = 50;
+      config.placeholder = "50자 이상 입력해 주세요.";
       break;
     case "ramen-image":
       config.images = ["/assets/ramen_1.png", "/assets/ramen_2.png"];
+      config.minChars = 50;
       break;
     case "relationship-opinion":
+      config.minChars = 50;
       config.situation =
         "저는 여자친구가 살을 빼면 더 사랑할 것 같아요. 지금도 사랑하긴 하는데, 더 사랑할 수 있을 것 같거든요. 그래서 여자친구에게 운동을 권유하고 있어요. 더 사랑받을 수 있게 도와주는 거잖아요. 여자친구는 상처받는 것 같은데 저는 솔직한 거라고 생각해요. 어떻게 하면 여자친구와 이 문제를 더 건강하게 이야기할 수 있을까요?";
       config.placeholder = "의견을 적어 주세요.";

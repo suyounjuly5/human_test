@@ -51,7 +51,7 @@ export default function WritingChallenge({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {situation && (
-        <div className="rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm leading-6 text-neutral-600">
+        <div className="rounded-lg border border-white/[0.14] bg-black/[0.24] px-4 py-3 text-sm leading-6 text-white/[0.64]">
           {situation}
         </div>
       )}
@@ -67,11 +67,11 @@ export default function WritingChallenge({
         }}
         rows={6}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-neutral-300 px-4 py-3 text-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="dark-field w-full rounded-lg px-4 py-3 text-lg"
       />
 
       {minChars > 1 && (
-        <p className={`text-right text-sm ${canSubmit ? "text-green-700" : "text-neutral-500"}`}>
+        <p className={`text-right text-sm ${canSubmit ? "text-green-200" : "text-white/50"}`}>
           {trimmedLength} / {minChars}자
         </p>
       )}
@@ -79,7 +79,7 @@ export default function WritingChallenge({
       <button
         type="submit"
         disabled={!canSubmit}
-        className="rounded-lg bg-blue-600 px-7 py-3 text-white hover:bg-blue-700 disabled:bg-neutral-300"
+        className="dark-button rounded-lg px-7 py-3"
       >
         {UI.submit}
       </button>

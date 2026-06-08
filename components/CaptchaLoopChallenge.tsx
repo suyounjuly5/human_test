@@ -83,14 +83,14 @@ export default function CaptchaLoopChallenge({
     <form onSubmit={handleSubmit} className="space-y-5">
       <div
         onClick={handleImageClick}
-        className="relative select-none overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100 py-8 text-center font-mono text-4xl font-semibold tracking-[0.35em] text-neutral-800"
+        className="relative select-none overflow-hidden rounded-lg border border-white/[0.14] bg-black/30 py-8 text-center font-mono text-4xl font-semibold tracking-[0.35em] text-white"
         style={{
           background:
-            "repeating-linear-gradient(135deg, #f5f5f5, #f5f5f5 7px, #e5e5e5 7px, #e5e5e5 10px)",
+            "repeating-linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.09) 7px, rgba(255,255,255,0.03) 7px, rgba(255,255,255,0.03) 10px)",
         }}
       >
-        <div className="pointer-events-none absolute left-4 right-4 top-1/2 h-0.5 -rotate-3 bg-red-500/70" />
-        <div className="pointer-events-none absolute left-6 right-6 top-[58%] h-0.5 rotate-2 bg-blue-500/60" />
+        <div className="pointer-events-none absolute left-4 right-4 top-1/2 h-0.5 -rotate-3 bg-red-300/60" />
+        <div className="pointer-events-none absolute left-6 right-6 top-[58%] h-0.5 rotate-2 bg-white/40" />
         {captchaText.split("").map((char, index) => (
           <button
             key={`${captchaText}-${index}`}
@@ -115,13 +115,13 @@ export default function CaptchaLoopChallenge({
           setInput(e.target.value.toUpperCase());
         }}
         onPaste={() => telemetry.onPaste()}
-        className="w-full rounded-lg border border-neutral-300 px-4 py-3 font-mono text-lg uppercase focus:border-blue-500 focus:outline-none"
+        className="dark-field w-full rounded-lg px-4 py-3 font-mono text-lg uppercase"
         autoComplete="off"
       />
 
       <button
         type="submit"
-        className="rounded-lg bg-blue-600 px-7 py-3 text-white hover:bg-blue-700"
+        className="dark-button rounded-lg px-7 py-3"
       >
         {UI.submit}
       </button>

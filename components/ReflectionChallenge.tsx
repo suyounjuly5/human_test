@@ -5,13 +5,17 @@ import { UI } from "@/lib/ko";
 import type { TelemetryCollector } from "@/lib/client/telemetry";
 
 interface Props {
+  config?: Record<string, unknown>;
   telemetry: TelemetryCollector;
   onComplete: (extras: Record<string, unknown>) => void;
 }
 
-export default function ReflectionChallenge({ telemetry, onComplete }: Props) {
+export default function ReflectionChallenge({ config = {}, telemetry, onComplete }: Props) {
   const [answer, setAnswer] = useState("");
   const firstKeyRef = useRef<number | null>(null);
+  const minChars = (config.minChars as number | undefined) ?? 1;
+  const trimmedLength = answer.trim().length;
+  const canSubmit = trimmedLength >= minChars;
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
@@ -25,7 +29,7 @@ export default function ReflectionChallenge({ telemetry, onComplete }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!answer.trim()) return;
+    if (!canSubmit) return;
     onComplete({
       answer: answer.trim(),
       timingData: {
@@ -50,12 +54,17 @@ export default function ReflectionChallenge({ telemetry, onComplete }: Props) {
         }}
         rows={6}
         placeholder={UI.reflectionPlaceholder}
-        className="w-full rounded-lg border border-neutral-300 px-4 py-3 text-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="dark-field w-full rounded-lg px-4 py-3 text-lg"
       />
+      {minChars > 1 && (
+        <p className={`text-right text-sm ${canSubmit ? "text-green-200" : "text-white/50"}`}>
+          {trimmedLength} / {minChars}자
+        </p>
+      )}
       <button
         type="submit"
-        disabled={!answer.trim()}
-        className="rounded-lg bg-blue-600 px-7 py-3 text-white hover:bg-blue-700 disabled:bg-neutral-300"
+        disabled={!canSubmit}
+        className="dark-button rounded-lg px-7 py-3"
       >
         {UI.submit}
       </button>
