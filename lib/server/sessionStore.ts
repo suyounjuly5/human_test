@@ -88,6 +88,10 @@ export function getSession(sessionId: string): SessionRecord | undefined {
   return sessions.get(sessionId);
 }
 
+export function cacheSession(session: SessionRecord): void {
+  sessions.set(session.id, session);
+}
+
 export function touchSession(sessionId: string): void {
   const session = sessions.get(sessionId);
   if (session) {

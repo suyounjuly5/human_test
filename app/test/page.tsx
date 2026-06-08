@@ -17,15 +17,6 @@ export default function TestPage() {
 
   useEffect(() => {
     async function init() {
-      const navigation = performance.getEntriesByType("navigation")[0] as
-        | PerformanceNavigationTiming
-        | undefined;
-      if (navigation?.type === "reload") {
-        sessionStorage.removeItem("hfcl_session_id");
-        router.replace("/verify");
-        return;
-      }
-
       const existing = getSessionId();
       if (existing) {
         sessionStorage.removeItem("hfcl_session_id");

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   getSession,
+  cacheSession,
   recordChallengeSubmission,
   checkRateLimit,
   isSessionStale,
@@ -8,7 +9,10 @@ import {
 } from "@/lib/server/sessionStore";
 import { getClientChallengeConfig } from "@/lib/server/challengeBank";
 import { scoreChallenge } from "@/lib/server/scoring";
-import { storeChallengeSubmission } from "@/lib/server/firebaseStore";
+import {
+  loadSessionFromFirebase,
+  storeChallengeSubmission,
+} from "@/lib/server/firebaseStore";
 import type { ChallengeScore, ChallengeTelemetry, Verdict } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -40,7 +44,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const session = getSession(sessionId);
+    let session = getSession(sessionId);
+    if (!session) {
+      session = await loadSessionFromFirebase(sessionId);
+      if (session) cacheSession(session);
+    }
+
     if (!session) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }

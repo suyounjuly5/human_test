@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   getSession,
+  cacheSession,
   finishSession,
   checkRateLimit,
 } from "@/lib/server/sessionStore";
@@ -9,7 +10,10 @@ import {
   getVerdictLabel,
   getVerdictSummary,
 } from "@/lib/server/scoring";
-import { storeSessionFinished } from "@/lib/server/firebaseStore";
+import {
+  loadSessionFromFirebase,
+  storeSessionFinished,
+} from "@/lib/server/firebaseStore";
 
 export const runtime = "nodejs";
 
@@ -36,7 +40,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
     }
 
-    const session = getSession(sessionId);
+    let session = getSession(sessionId);
+    if (!session) {
+      session = await loadSessionFromFirebase(sessionId);
+      if (session) cacheSession(session);
+    }
+
     if (!session) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }

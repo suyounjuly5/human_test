@@ -85,6 +85,22 @@ function getAverageHumanLikelihood(scores: ChallengeScore[]): number | null {
   return Math.round(avg * 100) / 100;
 }
 
+export async function loadSessionFromFirebase(
+  sessionId: string
+): Promise<SessionRecord | undefined> {
+  const db = getDb();
+  if (!db) return undefined;
+
+  try {
+    const snapshot = await db.collection(COLLECTION_NAME).doc(sessionId).get();
+    const data = snapshot.data();
+    return data?.serverState as SessionRecord | undefined;
+  } catch (error) {
+    console.error("Failed to load session from Firebase", error);
+    return undefined;
+  }
+}
+
 export async function storeSessionStarted(session: SessionRecord): Promise<void> {
   const db = getDb();
   if (!db) return;
@@ -102,6 +118,7 @@ export async function storeSessionStarted(session: SessionRecord): Promise<void>
         finished: session.finished,
         challengeCount: session.challenges.length,
         challengeTypes: session.challenges.map((challenge) => challenge.challengeType),
+        serverState: session,
         savedAt: FieldValue.serverTimestamp(),
       }) as DocumentData,
       { merge: true }
@@ -135,6 +152,7 @@ export async function storeChallengeSubmission(params: {
         finished: session.finished,
         challengeCount: session.challengeScores.length,
         avgHumanLikelihood: getAverageHumanLikelihood(session.challengeScores),
+        serverState: session,
         updatedAt: FieldValue.serverTimestamp(),
       }) as DocumentData,
       { merge: true }
@@ -197,6 +215,7 @@ export async function storeSessionFinished(params: {
         avgHumanLikelihood: getAverageHumanLikelihood(session.challengeScores),
         flagSummary: flags.slice(0, 50),
         scores: session.challengeScores,
+        serverState: session,
         updatedAt: FieldValue.serverTimestamp(),
       }) as DocumentData,
       { merge: true }

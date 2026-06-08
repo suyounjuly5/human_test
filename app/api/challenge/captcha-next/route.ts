@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession, checkRateLimit } from "@/lib/server/sessionStore";
+import {
+  cacheSession,
+  getSession,
+  checkRateLimit,
+} from "@/lib/server/sessionStore";
+import { loadSessionFromFirebase } from "@/lib/server/firebaseStore";
+
+export const runtime = "nodejs";
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -27,7 +34,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const session = getSession(sessionId);
+    let session = getSession(sessionId);
+    if (!session) {
+      session = await loadSessionFromFirebase(sessionId);
+      if (session) cacheSession(session);
+    }
+
     if (!session) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
