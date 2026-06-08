@@ -8,7 +8,10 @@ import {
 } from "@/lib/server/sessionStore";
 import { getClientChallengeConfig } from "@/lib/server/challengeBank";
 import { scoreChallenge } from "@/lib/server/scoring";
+import { storeChallengeSubmission } from "@/lib/server/firebaseStore";
 import type { ChallengeScore, ChallengeTelemetry, Verdict } from "@/lib/types";
+
+export const runtime = "nodejs";
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -59,8 +62,24 @@ export async function POST(request: NextRequest) {
 
     const stale = isSessionStale(session);
     const score = await scoreChallenge(challengeState, telemetry, stale);
+    const challengeVerdict = getChallengeVerdict(score);
 
-    recordChallengeSubmission(sessionId, resolvedChallengeIndex, telemetry, score);
+    const updatedSession = recordChallengeSubmission(
+      sessionId,
+      resolvedChallengeIndex,
+      telemetry,
+      score
+    );
+
+    if (updatedSession) {
+      await storeChallengeSubmission({
+        session: updatedSession,
+        challengeIndex: resolvedChallengeIndex,
+        telemetry,
+        score,
+        challengeVerdict,
+      });
+    }
 
     const nextChallenge =
       findNextUnscoredChallenge(session.challenges, resolvedChallengeIndex) ??
@@ -69,14 +88,14 @@ export async function POST(request: NextRequest) {
     if (!nextChallenge) {
       return NextResponse.json({
         action: "finish",
-        challengeVerdict: getChallengeVerdict(score),
+        challengeVerdict,
       });
     }
 
     return NextResponse.json({
       action: "continue",
       nextChallenge,
-      challengeVerdict: getChallengeVerdict(score),
+      challengeVerdict,
     });
   } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });

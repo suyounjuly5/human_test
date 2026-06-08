@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSession, checkRateLimit } from "@/lib/server/sessionStore";
 import { getClientChallengeConfig } from "@/lib/server/challengeBank";
+import { storeSessionStarted } from "@/lib/server/firebaseStore";
+
+export const runtime = "nodejs";
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -23,6 +26,8 @@ export async function POST(request: NextRequest) {
     const viewport = body.viewport ?? { width: 0, height: 0 };
 
     const session = createSession(userAgent, viewport, ip);
+    await storeSessionStarted(session);
+
     const firstChallenge = getClientChallengeConfig(session.challenges, 0);
     const challenges = session.challenges
       .map((_, index) => getClientChallengeConfig(session.challenges, index))

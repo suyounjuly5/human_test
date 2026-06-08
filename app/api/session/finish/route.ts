@@ -9,6 +9,9 @@ import {
   getVerdictLabel,
   getVerdictSummary,
 } from "@/lib/server/scoring";
+import { storeSessionFinished } from "@/lib/server/firebaseStore";
+
+export const runtime = "nodejs";
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -48,12 +51,21 @@ export async function POST(request: NextRequest) {
     }
 
     const verdict = computeVerdict(session);
-    finishSession(sessionId, verdict);
+    const finishedSession = finishSession(sessionId, verdict) ?? session;
+    const verdictLabel = getVerdictLabel(verdict);
+    const verdictSummary = getVerdictSummary(finishedSession, verdict);
+
+    await storeSessionFinished({
+      session: finishedSession,
+      verdict,
+      verdictLabel,
+      verdictSummary,
+    });
 
     return NextResponse.json({
       verdict,
-      verdictLabel: getVerdictLabel(verdict),
-      verdictSummary: getVerdictSummary(session, verdict),
+      verdictLabel,
+      verdictSummary,
       sessionId,
     });
   } catch {
